@@ -20,6 +20,17 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
             <form action="/cgi-bin" method="get">
                 <label for="man2html">Enter Command:</label>
                 <input type="text" id="man2html" name="man2html">
+                <label for="section">Select Section:</label>
+                <select id="section" name="section">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
                 <input type="submit" value="Get Man Page">
             </form>
         </body>
@@ -28,8 +39,9 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(html_content.encode('utf-8'))
 
     def parse_page_name(self, query: str):
-        if '=' in query:
-            return None, query.split('=')[-1]
+        if '&' in query:
+            n,s = query.split('&')
+            return s.split('=')[-1], n.split('=')[-1]
 
         if '+' in query:
             return query.split('+')
