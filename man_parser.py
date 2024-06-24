@@ -3,6 +3,15 @@ import re
 
 from locations import add_theme, TEMPLATE_PAGE
 
+class Potentials:
+    def __init__(self, pot_str: str, name: str, section: str):
+        self.pot_str = pot_str
+        self.name = name
+        self.section = section
+
+    def __str__(self):
+        return f'Could not find man page for {self.name} section {self.section} did you mean: {self.pot_str}'
+
 def __run_command_and_get_output(command) -> str:
     try:
         with Popen(command, stdout=PIPE) as proc:
@@ -16,11 +25,15 @@ def __find_page(name: str, section: str):
     if not locations:
         return None
 
+    pot_str = ''
     for l in locations.split():
         if l.endswith('.gz') and section in l:
             return l
+        elif l.endswith('.gz'):
+            n,s,_ = l[l.rfind('/')+1:].split('.')
+            pot_str += n + ' ' + s + ' '
 
-    return None
+    return Potentials(pot_str, name, section) if pot_str else None
 
 def __convert_page(path: str):
     return __run_command_and_get_output(['man2html', path])
@@ -45,6 +58,9 @@ def get_page(name: str, section: str, theme: str):
 
     if not page_path:
         return None
+
+    if type(page_path) is Potentials:
+        return page_path
 
     html_page = __convert_page(page_path)
 

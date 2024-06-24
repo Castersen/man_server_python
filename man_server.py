@@ -4,7 +4,7 @@ import urllib.parse
 import argparse
 from functools import lru_cache
 
-from man_parser import get_page
+from man_parser import get_page, Potentials
 from locations import ERROR_KEY, StartPage, PageTheme
 
 class ManPageHandler(http.server.SimpleHTTPRequestHandler):
@@ -48,7 +48,11 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
             man_page_html = get_page(name, section, PageTheme.page_theme)
 
             if not man_page_html:
-                self.__send_start_page_with_error(f'Could not find man page for {name}')
+                self.__send_start_page_with_error(f'Could not find man page for {name} section {section}')
+                return
+
+            if type(man_page_html) is Potentials:
+                self.__send_start_page_with_error(str(man_page_html))
                 return
 
             self.__setup_200_headers()
