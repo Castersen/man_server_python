@@ -9,7 +9,7 @@ THEME_KEY = '/*Theme*/'
 
 def add_theme(page: str, theme_name: str):
     themes = [str(theme) for theme in Path(THEME_DIR).iterdir()]
-    theme_name = __format_theme(theme_name)
+    theme_name = __format_theme_name(theme_name)
 
     if not theme_name or theme_name not in themes:
         return __add_theme(page, DEFAULT_THEME)
@@ -20,7 +20,7 @@ def __add_theme(page: str, theme):
         with open(theme, 'r') as f:
             return page.replace(THEME_KEY, f.read())
 
-def __format_theme(theme_name: str):
+def __format_theme_name(theme_name: str):
     if not theme_name:
         return None
 
