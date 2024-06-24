@@ -30,9 +30,10 @@ def __post_process_page(page: str, theme: str):
     section_html = ''
 
     for section in sections:
-        id = re.search(r'(?<=\")[^"]*', section).group(0)
-        title = re.search(r'(?<=\">)[^<]*', section).group(0)
-        section_html += f'<a href=\"{id}\">{title}</a>'
+        start = section.find('"')
+        end = section[start:].find('<')
+        id, title = section[start:start+end].split('>')
+        section_html += f'<a href={id}>{title}</a>'
 
     with open(TEMPLATE_PAGE, 'r') as f:
         html_page = f.read().replace('{sections}', section_html).replace('{data}', page)
