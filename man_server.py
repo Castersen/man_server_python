@@ -2,6 +2,7 @@ import http.server
 import socketserver
 import urllib.parse
 import argparse
+from functools import lru_cache
 
 from man_parser import get_page
 from locations import ERROR_KEY, StartPage, PageTheme
@@ -12,13 +13,17 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
+    @lru_cache(maxsize=32)
+    def __get_start_page(self, error_msg: str):
+        return StartPage.start_page.replace(ERROR_KEY, error_msg).encode('utf-8')
+
     def __send_start_page(self):
         self.__setup_200_headers()
-        self.wfile.write(StartPage.start_page.replace(ERROR_KEY, '').encode('utf-8'))
+        self.wfile.write(self.__get_start_page(''))
 
     def __send_start_page_with_error(self, error_msg: str):
         self.__setup_200_headers()
-        self.wfile.write(StartPage.start_page.replace(ERROR_KEY, error_msg).encode('utf-8'))
+        self.wfile.write(self.__get_start_page(error_msg))
 
     def __parse_page_name(self, query: str):
         if '&' in query:
