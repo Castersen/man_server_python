@@ -26,10 +26,6 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(self.__get_start_page(error_msg))
 
     def __parse_page_name(self, query: str):
-        if '&' in query:
-            n,s = query.split('&')
-            return s.split('=')[-1], n.split('=')[-1]
-
         if '+' in query:
             return query.split('+')
 

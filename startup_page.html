@@ -49,7 +49,7 @@
         <div class="man-server-header">
             <h1>Man Page Server</h1>
         </div>
-        <form class="man-server-command-form" action="/cgi-bin" method="get">
+        <form class="man-server-command-form" onsubmit="return formatQuery()">
             <div class="man-page-form">
                 <label for="man2html">Man Page:</label>
                 <input type="text" id="man2html" name="man2html">
@@ -75,5 +75,14 @@
             {error}
         </div>
     </div>
+    <script>
+        function formatQuery() {
+            const section = document.getElementById('section').value;
+            const manPage = document.getElementById('man2html').value;
+            const queryString = `cgi-bin/man2html?${section}+${manPage}`;
+            window.location.href = queryString;
+            return false;
+        }
+    </script>
 </body>
 </html>
