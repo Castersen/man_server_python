@@ -2,6 +2,7 @@ from pathlib import Path
 
 STARTUP_PAGE = 'startup_page.html'
 TEMPLATE_PAGE = 'template.html'
+ERROR_KEY = '{error}'
 
 THEME_DIR = 'themes'
 DEFAULT_THEME = Path(THEME_DIR) / 'default.css'

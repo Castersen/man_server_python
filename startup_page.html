@@ -39,6 +39,9 @@
             cursor: pointer;
             background-color: rgb(234, 234, 234);
         }
+        #error {
+            color: red;
+        }
         </style>
     </head>
 <body>
@@ -68,6 +71,9 @@
                 <input type="submit" value="Get Man Page">
             </div>
         </form>
+        <div id="error">
+            {error}
+        </div>
     </div>
 </body>
 </html>
