@@ -42,7 +42,7 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
             section, name = self.__parse_page_name(query)
 
             if not name:
-                self.__send_start_page_with_error(f'Please provide man page name')
+                self.__send_start_page_with_error('Please provide man page name')
                 return
 
             man_page_html = get_page(name, section, PageTheme.page_theme)
