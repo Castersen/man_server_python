@@ -12,15 +12,15 @@ class Potentials:
     def __str__(self):
         return f'Could not find man page for {self.name} section {self.section} did you mean: {self.pot_str}'
 
-def __run_command_and_get_output(command) -> str:
+def _run_command_and_get_output(command) -> str:
     try:
         with Popen(command, stdout=PIPE) as proc:
             return proc.stdout.read().decode('utf-8')
     except Exception:
         return None
 
-def __find_page(name: str, section: str):
-    locations: str = __run_command_and_get_output(['whereis', name])
+def _find_page(name: str, section: str):
+    locations: str = _run_command_and_get_output(['whereis', name])
 
     if not locations:
         return None
@@ -35,10 +35,10 @@ def __find_page(name: str, section: str):
 
     return Potentials(pot_str, name, section) if pot_str else None
 
-def __convert_page(path: str):
-    return __run_command_and_get_output(['man2html', path])
+def _convert_page(path: str):
+    return _run_command_and_get_output(['man2html', path])
 
-def __post_process_page(page: str, theme: str, name: str):
+def _post_process_page(page: str, theme: str, name: str):
     sections = re.findall(r'<DT><A.*', page)
     section_html = ''
 
@@ -53,31 +53,31 @@ def __post_process_page(page: str, theme: str, name: str):
 
     return add_theme(html_page, theme)
 
-def __format_cache_name(name, section):
+def _format_cache_name(name, section):
     return CACHE_DIR / (name + section + '.html')
 
-def __page_in_cache(name, section):
-    cache_name = __format_cache_name(name, section)
+def _page_in_cache(name, section):
+    cache_name = _format_cache_name(name, section)
     if cache_name in CACHE:
         with open(cache_name, 'r') as f:
             return f.read()
 
     return None
 
-def __cache_page(html_page, name, section):
-    cache_name = __format_cache_name(name, section)
+def _cache_page(html_page, name, section):
+    cache_name = _format_cache_name(name, section)
     with open(cache_name, 'w') as f:
         f.write(html_page)
 
     CACHE.append(cache_name)
 
 def get_page(name: str, section: str, theme: str):
-    cached_page = __page_in_cache(name, section)
+    cached_page = _page_in_cache(name, section)
 
     if cached_page:
-        return __post_process_page(cached_page, theme, name)
+        return _post_process_page(cached_page, theme, name)
 
-    page_path = __find_page(name, section)
+    page_path = _find_page(name, section)
 
     if not page_path:
         return None
@@ -85,13 +85,13 @@ def get_page(name: str, section: str, theme: str):
     if type(page_path) is Potentials:
         return page_path
 
-    html_page = __convert_page(page_path)
+    html_page = _convert_page(page_path)
 
     if not html_page:
         return None
 
-    __cache_page(html_page, name, section)
+    _cache_page(html_page, name, section)
 
-    final_html_page = __post_process_page(html_page, theme, name)
+    final_html_page = _post_process_page(html_page, theme, name)
 
     return final_html_page
