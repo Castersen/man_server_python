@@ -1,7 +1,6 @@
 import http.server
 import socketserver
 import urllib.parse
-import html
 
 from man_parser import get_page
 from locations import STARTUP_PAGE, get_page_contents

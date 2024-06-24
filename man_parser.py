@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from subprocess import Popen, PIPE
 import re
 import os
