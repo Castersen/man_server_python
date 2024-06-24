@@ -1,7 +1,7 @@
 from subprocess import Popen, PIPE
 import re
 
-from locations import add_theme, TEMPLATE_PAGE
+from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, add_theme
 
 class Potentials:
     def __init__(self, pot_str: str, name: str, section: str):
@@ -53,7 +53,30 @@ def __post_process_page(page: str, theme: str):
 
     return add_theme(html_page, theme)
 
+def __format_cache_name(name, section):
+    return CACHE_DIR / (name + section + '.html')
+
+def __page_in_cache(name, section):
+    cache_name = __format_cache_name(name, section)
+    if cache_name in CACHE:
+        with open(cache_name, 'r') as f:
+            return f.read()
+
+    return None
+
+def __cache_page(html_page, name, section):
+    cache_name = __format_cache_name(name, section)
+    with open(cache_name, 'w') as f:
+        f.write(html_page)
+
+    CACHE.append(cache_name)
+
 def get_page(name: str, section: str, theme: str):
+    cached_page = __page_in_cache(name, section)
+
+    if cached_page:
+        return __post_process_page(cached_page, theme)
+
     page_path = __find_page(name, section)
 
     if not page_path:
@@ -66,6 +89,8 @@ def get_page(name: str, section: str, theme: str):
 
     if not html_page:
         return None
+
+    __cache_page(html_page, name, section)
 
     final_html_page = __post_process_page(html_page, theme)
 

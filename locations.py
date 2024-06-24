@@ -9,6 +9,9 @@ THEMES = [theme for theme in THEME_DIR.iterdir()]
 DEFAULT_THEME = THEME_DIR / 'default.css'
 THEME_KEY = '/*Theme*/'
 
+CACHE_DIR = Path('cache')
+CACHE = [man_page for man_page in CACHE_DIR.iterdir()]
+
 def add_theme(page: str, theme_name: str):
     theme_name = __format_theme_name(theme_name)
 
