@@ -6,25 +6,29 @@ import re
 
 TEMPLATE = 'template.html'
 
-def run_command_and_get_output(command) -> str:
+def __run_command_and_get_output(command) -> str:
     try:
         with Popen(command, stdout=PIPE) as proc:
             return proc.stdout.read().decode('utf-8')
     except Exception:
         return None
 
-def find_page(name: str, section: int = None):
-    section = '1' if not section else str(section)
+def __find_page(name: str, section: str):
+    locations: str = __run_command_and_get_output(['whereis', name])
 
-    locations: List[str] = run_command_and_get_output(['whereis', name]).split()
-    man = next((l for l in locations if l.endswith('.gz') and section in l), None)
+    if not locations:
+        return None
 
-    return man
+    for l in locations.split():
+        if l.endswith('.gz') and section in l:
+            return l
 
-def convert_page(path: str):
-    return run_command_and_get_output(['man2html', path])
+    return None
 
-def post_process_page(page: str):
+def __convert_page(path: str):
+    return __run_command_and_get_output(['man2html', path])
+
+def __post_process_page(page: str):
     sections = re.findall(r'<DT><A.*', page)
     section_html = ''
 
@@ -37,3 +41,17 @@ def post_process_page(page: str):
         html_page = f.read().replace('{sections}', section_html).replace('{data}', page)
 
     return html_page
+def get_page(name: str, section: str):
+    page_path = __find_page(name, section)
+
+    if not page_path:
+        return None
+
+    html_page = __convert_page(page_path)
+
+    if not html_page:
+        return None
+
+    final_html_page = __post_process_page(html_page)
+
+    return final_html_page

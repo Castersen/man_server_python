@@ -2,7 +2,8 @@ import http.server
 import socketserver
 import urllib.parse
 import html
-from man_parser import find_page, convert_page, post_process_page
+
+from man_parser import get_page
 
 PORT = 8000
 HOST = 'localhost'
@@ -60,10 +61,10 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_start_page()
                 return
 
-            man_page_html = post_process_page(convert_page(find_page(name, section)))
+            man_page_html = get_page(name, section)
 
             if not man_page_html:
-                self.send_error(404, f'Error fetching man page for {html.escape(name)}.')
+                self.send_error(404, f'Error fetching man page for {name}')
                 return
 
             self.send_response(200)
