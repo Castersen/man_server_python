@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from subprocess import Popen, PIPE
-from typing import List
 import re
+import os
 
-TEMPLATE = 'template.html'
+from locations import add_theme, TEMPLATE_PAGE
 
 def __run_command_and_get_output(command) -> str:
     try:
@@ -37,10 +37,11 @@ def __post_process_page(page: str):
         title = re.search(r'(?<=\">)[^<]*', section).group(0)
         section_html += f'<a href=\"{id}\">{title}</a>'
 
-    with open(TEMPLATE, 'r') as f:
+    with open(TEMPLATE_PAGE, 'r') as f:
         html_page = f.read().replace('{sections}', section_html).replace('{data}', page)
 
-    return html_page
+    return add_theme(html_page, os.getenv('THEME'))
+
 def get_page(name: str, section: str):
     page_path = __find_page(name, section)
 

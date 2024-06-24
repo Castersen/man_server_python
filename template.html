@@ -3,49 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <title>{name} man page</title>
-    <style>
-        body {
-            margin: 0px;
-        }
-
-        .man-content {
-            margin-left: 300px;
-            margin-right: 500px;
-        }
-
-        .man-navigation {
-            display: block;
-            height: 100%;
-            position: fixed;
-            z-index: 1;
-            width: 250px;
-            top: 0;
-            padding: 38px 0 20px 14px;
-            background-color: #eee;
-            overflow-x: hidden;
-            padding-top: 60px;
-        }
-
-        .man-navigation a,
-        .man-navigation a:hover,
-        .man-navigation a:link,
-        .man-navigation a:visited {
-            display: block;
-            margin: 0;
-            padding: 5px 2px 5px 16px;
-            color: #999;
-            text-decoration: none;
-        }
-
-        .man-navigation a:hover {
-            color: #111;
-            text-decoration: underline;
-        }
-    </style>
+    <style>/*Theme*/</style>
   </head>
   <body>
     <div class="man-navigation">
         <div class="sections">
+          <div id="index">
+            Index
+          </div>
             {sections}
         </div>
     </div>
