@@ -38,7 +38,7 @@ def __find_page(name: str, section: str):
 def __convert_page(path: str):
     return __run_command_and_get_output(['man2html', path])
 
-def __post_process_page(page: str, theme: str):
+def __post_process_page(page: str, theme: str, name: str):
     sections = re.findall(r'<DT><A.*', page)
     section_html = ''
 
@@ -49,7 +49,7 @@ def __post_process_page(page: str, theme: str):
         section_html += f'<a href={id}>{title}</a>'
 
     with open(TEMPLATE_PAGE, 'r') as f:
-        html_page = f.read().replace('{sections}', section_html).replace('{data}', page)
+        html_page = f.read().replace('{sections}', section_html).replace('{data}', page).replace('{name}', name)
 
     return add_theme(html_page, theme)
 
@@ -75,7 +75,7 @@ def get_page(name: str, section: str, theme: str):
     cached_page = __page_in_cache(name, section)
 
     if cached_page:
-        return __post_process_page(cached_page, theme)
+        return __post_process_page(cached_page, theme, name)
 
     page_path = __find_page(name, section)
 
@@ -92,6 +92,6 @@ def get_page(name: str, section: str, theme: str):
 
     __cache_page(html_page, name, section)
 
-    final_html_page = __post_process_page(html_page, theme)
+    final_html_page = __post_process_page(html_page, theme, name)
 
     return final_html_page
