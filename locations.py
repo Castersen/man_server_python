@@ -30,3 +30,9 @@ def __format_theme_name(theme_name: str):
 def get_page_contents(page):
     with open(page, 'r') as f:
         return f.read()
+
+class PageTheme:
+    page_theme:str = 'default'
+
+class StartPage:
+    start_page = get_page_contents(STARTUP_PAGE)

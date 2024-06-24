@@ -4,10 +4,7 @@ import urllib.parse
 import argparse
 
 from man_parser import get_page
-from locations import STARTUP_PAGE, get_page_contents, ERROR_KEY
-
-STARTUP_PAGE_CONTENTS = get_page_contents(STARTUP_PAGE)
-PAGE_THEME = 'default'
+from locations import ERROR_KEY, StartPage, PageTheme
 
 class ManPageHandler(http.server.SimpleHTTPRequestHandler):
     def __setup_200_headers(self):
@@ -17,11 +14,11 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
 
     def __send_start_page(self):
         self.__setup_200_headers()
-        self.wfile.write(STARTUP_PAGE_CONTENTS.replace(ERROR_KEY, '').encode('utf-8'))
+        self.wfile.write(StartPage.start_page.replace(ERROR_KEY, '').encode('utf-8'))
 
     def __send_start_page_with_error(self, error_msg: str):
         self.__setup_200_headers()
-        self.wfile.write(STARTUP_PAGE_CONTENTS.replace(ERROR_KEY, error_msg).encode('utf-8'))
+        self.wfile.write(StartPage.start_page.replace(ERROR_KEY, error_msg).encode('utf-8'))
 
     def __parse_page_name(self, query: str):
         if '&' in query:
@@ -47,7 +44,7 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
                 self.__send_start_page_with_error(f'Please provide man page name')
                 return
 
-            man_page_html = get_page(name, section, PAGE_THEME)
+            man_page_html = get_page(name, section, PageTheme.page_theme)
 
             if not man_page_html:
                 self.__send_start_page_with_error(f'Could not find man page for {name}')
@@ -73,8 +70,7 @@ def main():
     if (args.port):
         port = args.port
     if (args.theme):
-        global PAGE_THEME
-        PAGE_THEME = args.theme
+        PageTheme.page_theme = args.theme
 
     print(f'Starting server at {host} port {port}')
     with socketserver.TCPServer((host, port), ManPageHandler) as server:
