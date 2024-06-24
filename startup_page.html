@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <title>Man Page Server</title>
+        <style>
+        body {
+            margin: 0px;
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .man-server-container {
+            text-align: center;
+        }
+        .man-server-header h1 {
+            margin-bottom: 20px;
+        }
+        .man-server-command-form {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .man-server-command-form label {
+            padding-right: 10px;
+        }
+        .man-server-command-form div {
+            display: flex;
+            align-items: center;
+        }
+        .submit-form input {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: white;
+            border: none;
+            padding: 5px 20px;
+        }
+        .submit-form input:hover {
+            cursor: pointer;
+            background-color: rgb(234, 234, 234);
+        }
+        </style>
+    </head>
+<body>
+    <div class="man-server-container">
+        <div class="man-server-header">
+            <h1>Man Page Server</h1>
+        </div>
+        <form class="man-server-command-form" action="/cgi-bin" method="get">
+            <div class="man-page-form">
+                <label for="man2html">Man Page:</label>
+                <input type="text" id="man2html" name="man2html">
+            </div>
+            <div class="man-section-form">
+                <label for="section">Select Section:</label>
+                <select id="section" name="section">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+            <div class="submit-form">
+                <input type="submit" value="Get Man Page">
+            </div>
+        </form>
+    </div>
+</body>
+</html>

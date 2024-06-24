@@ -4,6 +4,9 @@ import urllib.parse
 import html
 
 from man_parser import get_page
+from locations import STARTUP_PAGE, get_page_contents
+
+STARTUP_PAGE_CONTENTS = get_page_contents(STARTUP_PAGE)
 
 PORT = 8000
 HOST = 'localhost'
@@ -13,30 +16,7 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        html_content = '''
-        <html>
-        <head><title>Man Page Server</title></head>
-        <body>
-            <h1>Man Page Server</h1>
-            <form action="/cgi-bin" method="get">
-                <label for="man2html">Enter Command:</label>
-                <input type="text" id="man2html" name="man2html">
-                <label for="section">Select Section:</label>
-                <select id="section" name="section">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                </select>
-                <input type="submit" value="Get Man Page">
-            </form>
-        </body>
-        </html>
-        '''
+        html_content = STARTUP_PAGE_CONTENTS
         self.wfile.write(html_content.encode('utf-8'))
 
     def parse_page_name(self, query: str):
@@ -52,10 +32,7 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith('/cgi-bin'):
             query = urllib.parse.urlparse(self.path).query
-            print(query)
-
             section, name = self.parse_page_name(query)
-            print(f'Section: {section}, Name: {name}')
 
             if not name:
                 self.send_start_page()
