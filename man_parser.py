@@ -1,6 +1,5 @@
 from subprocess import Popen, PIPE
 import re
-import os
 
 from locations import add_theme, TEMPLATE_PAGE
 
@@ -26,7 +25,7 @@ def __find_page(name: str, section: str):
 def __convert_page(path: str):
     return __run_command_and_get_output(['man2html', path])
 
-def __post_process_page(page: str):
+def __post_process_page(page: str, theme: str):
     sections = re.findall(r'<DT><A.*', page)
     section_html = ''
 
@@ -38,9 +37,9 @@ def __post_process_page(page: str):
     with open(TEMPLATE_PAGE, 'r') as f:
         html_page = f.read().replace('{sections}', section_html).replace('{data}', page)
 
-    return add_theme(html_page, os.getenv('THEME'))
+    return add_theme(html_page, theme)
 
-def get_page(name: str, section: str):
+def get_page(name: str, section: str, theme: str):
     page_path = __find_page(name, section)
 
     if not page_path:
@@ -51,6 +50,6 @@ def get_page(name: str, section: str):
     if not html_page:
         return None
 
-    final_html_page = __post_process_page(html_page)
+    final_html_page = __post_process_page(html_page, theme)
 
     return final_html_page
