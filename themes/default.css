@@ -35,7 +35,7 @@ body {
     font-size: 20px;
 }
 
-.man-navigation #index {
+.man-navigation .index-label {
     text-decoration: underline;
 }
 
