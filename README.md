@@ -13,7 +13,7 @@ Supports various themes, follows links, caches converted pages, shows potential 
 
 This also assumes that man pages are stored in .gz format
 
-## How to use:
+## How to use
 
 `python3 man_server.py`  
 
