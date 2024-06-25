@@ -63,3 +63,13 @@ table {
 td {
     padding: 5px;
 }
+
+@media screen and (max-width: 800px) {
+    .man-navigation {
+        display: none
+    }
+
+    .man-content {
+        margin-left: 10px;
+    }
+}
