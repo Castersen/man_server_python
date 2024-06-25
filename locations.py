@@ -13,29 +13,23 @@ CACHE_DIR = Path('cache')
 CACHE = [man_page for man_page in CACHE_DIR.iterdir()]
 
 def add_theme(page: str, theme_name: str):
-    theme_name = __format_theme_name(theme_name)
+    theme_name = THEME_DIR / (theme_name + '.css')
 
-    if not theme_name or theme_name not in THEMES:
-        return __add_theme(page, DEFAULT_THEME)
+    if theme_name not in THEMES:
+        theme_name = DEFAULT_THEME
 
     return __add_theme(page, theme_name)
 
-def __add_theme(page: str, theme):
+def __add_theme(page: str, theme: Path):
         with open(theme, 'r') as f:
             return page.replace(THEME_KEY, f.read())
-
-def __format_theme_name(theme_name: str):
-    if not theme_name:
-        return None
-
-    return THEME_DIR / (theme_name + '.css')
 
 def get_page_contents(page):
     with open(page, 'r') as f:
         return f.read()
 
 class PageTheme:
-    page_theme:str = 'default'
+    page_theme: str = 'default'
 
 class StartPage:
     start_page = get_page_contents(STARTUP_PAGE)
