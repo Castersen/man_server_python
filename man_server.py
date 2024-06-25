@@ -77,8 +77,11 @@ def main():
     if (args.theme):
         PageTheme.page_theme = args.theme
 
+    class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+        daemon_threads = True
+
     print(f'Starting server at {host} port {port}')
-    with socketserver.TCPServer((host, port), ManPageHandler) as server:
+    with ThreadingTCPServer((host, port), ManPageHandler) as server:
         server.serve_forever()
 
 if __name__ == '__main__':
