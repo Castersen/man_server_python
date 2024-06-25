@@ -16,9 +16,9 @@ This also assumes that man pages are stored in .gz format
 `python3 man_server.py`  
 
 By default this starts up a TCP server at port 8000,
-from there you can open your browser and direct it to <b>localhost:8000</b> and begin browsing man pages!
+from there you can open your browser and direct it to <b>localhost:8000</b> and begin browsing man pages.
 
-To change the port run
+To change the port
 
 `python3 man_server.py -p [port]`
 
