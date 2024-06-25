@@ -68,12 +68,15 @@ def main():
 
     parser = argparse.ArgumentParser(description='Man server options')
     parser.add_argument('-p', '--port', type=int, help='Set port')
+    parser.add_argument('-i', '--host', type=str, help='Set host')
     parser.add_argument('-t', '--theme', type=str, help='Set theme')
 
     args = parser.parse_args()
 
     if (args.port):
         port = args.port
+    if (args.host):
+        host = args.host
     if (args.theme):
         PageTheme.page_theme = args.theme
 

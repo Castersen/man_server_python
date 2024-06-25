@@ -28,6 +28,10 @@ To change the theme
 
 `python3 man_server.py -t [theme]`
 
+To see all options
+
+`python3 man_server.py -h`
+
 ## Themes
 
 <b>default</b>: This is a simple black and white terminal style theme and is the theme used if `-t` is not set
