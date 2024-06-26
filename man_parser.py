@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 from pathlib import Path
+import sys
 import re
 
 from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, add_theme
@@ -37,25 +38,18 @@ def _find_page(name: str, section: str):
     return Potentials(pot_str, name, section) if pot_str else None
 
 def _convert_page(path: str):
-    return _run_command_and_get_output(['mandoc', '-T', 'html', '-O', 'fragment', path])
+    if sys.platform.startswith('darwin'):
+        return _run_command_and_get_output(['mandoc', '-O', 'fragment,man=/cgi-bin?%S+%N', '-T', 'html', path])
+    else:
+        return _run_command_and_get_output(['man2html', path])
 
 def _post_process_page(page: str, theme: str, name: str):
-    sections = re.findall(r'<a class="permalink"\s(href="[^<]*</a>)', page)
-    man_see_also = re.findall(r'<a class="Xr"[^<]*</a>', page)
+    if sys.platform.startswith('darwin'):
+        sections = re.findall(r'(<a class="permalink"\shref="[^<]*</a>)', page)
+    else:
+        sections = re.findall(r'<DT>(<A\sHREF="[^"]*">[^<]*</A>)', page)
 
-    section_html = ''
-    for section in sections:
-        start = section.find('"')
-        end = section[start:].find('<')
-        id, title = section[start:start+end].split('>')
-        section_html += f'<a href={id}>{title}</a>'
-
-    for man_link in man_see_also:
-      e = man_link.find(')')
-      s = man_link[:e].rfind('>')
-      n,se = man_link[s+1:e].split('(')
-      t = man_link.replace('class', 'href').replace('Xr', f'/cgi-bin?{se}+{n}')
-      page = page.replace(man_link, t)
+    section_html = ''.join(section for section in sections)
 
     with open(TEMPLATE_PAGE, 'r') as f:
         html_page = f.read().replace('{sections}', section_html).replace('{data}', page).replace('{name}', name)
