@@ -8,8 +8,13 @@ Supports various themes, follows links, caches converted pages, shows potential 
 
 ## Dependencies 
 
-<b>man2html</b>  
-<b>man</b>  
+<b>Linux</b>  
+man2html  
+man  
+
+<b>Mac</b>  
+mandoc  
+man  
 
 ## How to use
 
@@ -50,7 +55,7 @@ Of course you can just generate your own css file from scratch but modifying one
 
 ## Internals
 
-Converting the man pages to html is done by <b>man2html</b> the pages themselves are found using <b>man -wa</b> and then parsing the output for the correct section. Every time a page is converted it is stored in the cache directory and subsequently retrieved from there.
+Converting the man pages to html is done by <b>mandoc</b> (mac) or <b>man2html</b> (linux) the pages themselves are found using <b>man -wa</b> and then parsing the output for the correct section. Every time a page is converted it is stored in the cache directory and subsequently retrieved from there.
 
 The output is then post processed before being sent to the client. This involves reading the index to generate the side view for easy access. Then <b>template.html</b> is read and the relevant parts of the man page are placed in the template. This is where the themes are loaded.
 

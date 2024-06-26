@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 from pathlib import Path
+import sys
 import re
 
 from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, add_theme
@@ -28,7 +29,7 @@ def _find_page(name: str, section: str):
 
     pot_str = ''
     for l in locations.rstrip('\n').split('\n'):
-        n,s,_ = Path(l).name.split('.')
+        n,s = Path(l).name.split('.')[0:2]
         pot_str += n + ' ' + s + ' '
 
         if section in s:
@@ -37,10 +38,17 @@ def _find_page(name: str, section: str):
     return Potentials(pot_str, name, section) if pot_str else None
 
 def _convert_page(path: str):
-    return _run_command_and_get_output(['man2html', path])
+    if sys.platform.startswith('darwin'):
+        return _run_command_and_get_output(['mandoc', '-O', 'fragment,man=/cgi-bin?%S+%N', '-T', 'html', path])
+    else:
+        return _run_command_and_get_output(['man2html', path])
 
 def _post_process_page(page: str, theme: str, name: str):
-    sections = re.findall(r'<DT>(<A\sHREF="[^"]*">[^<]*</A>)', page)
+    if sys.platform.startswith('darwin'):
+        sections = re.findall(r'(<a class="permalink"\shref="[^<]*</a>)', page)
+    else:
+        sections = re.findall(r'<DT>(<A\sHREF="[^"]*">[^<]*</A>)', page)
+
     section_html = ''.join(section for section in sections)
 
     with open(TEMPLATE_PAGE, 'r') as f:

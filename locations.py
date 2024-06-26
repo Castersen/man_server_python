@@ -1,10 +1,15 @@
 from pathlib import Path
+import sys
 
 STARTUP_PAGE = 'startup_page.html'
 TEMPLATE_PAGE = 'template.html'
 ERROR_KEY = '{error}'
 
-THEME_DIR = Path('themes')
+if sys.platform.startswith('darwin'):
+    THEME_DIR = Path('themes_mac')
+else:
+    THEME_DIR = Path('themes')
+
 THEMES = [theme for theme in THEME_DIR.iterdir()]
 DEFAULT_THEME = THEME_DIR / 'default.css'
 THEME_KEY = '/*Theme*/'
