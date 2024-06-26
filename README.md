@@ -6,12 +6,10 @@ https://github.com/Castersen/man_server_python/assets/90943238/7d9e031b-f1c7-446
 
 Supports various themes, follows links, caches converted pages, shows potential man pages if section is wrong.
 
-## Prerequisites 
+## Dependencies 
 
 <b>man2html</b>  
-<b>whereis</b>  
-
-This also assumes that man pages are stored in .gz format
+<b>man</b>  
 
 ## How to use
 

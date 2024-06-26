@@ -1,4 +1,5 @@
 from subprocess import Popen, PIPE
+from pathlib import Path
 import re
 
 from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, add_theme
@@ -20,18 +21,18 @@ def _run_command_and_get_output(command) -> str:
         return None
 
 def _find_page(name: str, section: str):
-    locations: str = _run_command_and_get_output(['whereis', name])
+    locations: str = _run_command_and_get_output(['man', '-wa', name])
 
     if not locations:
         return None
 
     pot_str = ''
-    for l in locations.split():
-        if l.endswith('.gz') and section in l:
+    for l in locations.rstrip('\n').split('\n'):
+        n,s,_ = Path(l).name.split('.')
+        pot_str += n + ' ' + s + ' '
+
+        if section in s:
             return l
-        elif l.endswith('.gz'):
-            n,s,_ = l[l.rfind('/')+1:].split('.')
-            pot_str += n + ' ' + s + ' '
 
     return Potentials(pot_str, name, section) if pot_str else None
 
