@@ -40,11 +40,8 @@ def _convert_page(path: str):
     return _run_command_and_get_output(['man2html', path])
 
 def _post_process_page(page: str, theme: str, name: str):
-    sections = re.findall(r'<DT><A\sHREF="([^"]*)">([^<]*)</A>', page)
-    section_html = ''
-
-    for section in sections:
-        section_html += f'<a href={section[0]}>{section[1]}</a>'
+    sections = re.findall(r'<DT>(<A\sHREF="[^"]*">[^<]*</A>)', page)
+    section_html = ''.join(section for section in sections)
 
     with open(TEMPLATE_PAGE, 'r') as f:
         html_page = f.read().replace('{sections}', section_html).replace('{data}', page).replace('{name}', name)
