@@ -5,6 +5,11 @@ body {
     font-family: 'Courier New', Courier, monospace
 }
 
+.head-ltitle,
+.head-rtitle {
+	font-weight: bold;
+}
+
 .man-content {
     margin-left: 300px;
     max-width: 800px;

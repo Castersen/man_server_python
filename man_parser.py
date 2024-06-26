@@ -28,7 +28,7 @@ def _find_page(name: str, section: str):
 
     pot_str = ''
     for l in locations.rstrip('\n').split('\n'):
-        n,s,_ = Path(l).name.split('.')
+        n,s = Path(l).name.split('.')
         pot_str += n + ' ' + s + ' '
 
         if section in s:
@@ -37,17 +37,25 @@ def _find_page(name: str, section: str):
     return Potentials(pot_str, name, section) if pot_str else None
 
 def _convert_page(path: str):
-    return _run_command_and_get_output(['man2html', path])
+    return _run_command_and_get_output(['mandoc', '-T', 'html', '-O', 'fragment', path])
 
 def _post_process_page(page: str, theme: str, name: str):
-    sections = re.findall(r'<DT><A.*', page)
-    section_html = ''
+    sections = re.findall(r'<a class="permalink"\s(href="[^<]*</a>)', page)
+    man_see_also = re.findall(r'<a class="Xr"[^<]*</a>', page)
 
+    section_html = ''
     for section in sections:
         start = section.find('"')
         end = section[start:].find('<')
         id, title = section[start:start+end].split('>')
         section_html += f'<a href={id}>{title}</a>'
+
+    for man_link in man_see_also:
+      e = man_link.find(')')
+      s = man_link[:e].rfind('>')
+      n,se = man_link[s+1:e].split('(')
+      t = man_link.replace('class', 'href').replace('Xr', f'/cgi-bin?{se}+{n}')
+      page = page.replace(man_link, t)
 
     with open(TEMPLATE_PAGE, 'r') as f:
         html_page = f.read().replace('{sections}', section_html).replace('{data}', page).replace('{name}', name)

@@ -5,6 +5,11 @@ body {
     font-family: 'Courier New', Courier, monospace;
 }
 
+.head-ltitle,
+.head-rtitle {
+	font-weight: bold;
+}
+
 .man-content {
     margin-left: 300px;
     max-width: 800px;
@@ -55,16 +60,21 @@ body {
     text-decoration: underline;
 }
 
-.man-content b {
+code, b {
     color: #aa0029;
 }
 
-.man-content h2 {
+.man-content h1 a:visited,
+.man-content h2 a:visited,
+.man-content h1 a:link,
+.man-content h2 a:link,
+.mann-conent h1 a,
+.mann-conent h2 a {
     color: #007c33;
     font-weight: bold;
 }
 
-.man-content i {
+.Ar {
     color: #0023ff;
 }
 
