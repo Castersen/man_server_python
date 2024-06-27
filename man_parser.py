@@ -39,7 +39,7 @@ def _find_page(name: str, section: str):
 
 def _convert_page(path: str):
     if sys.platform.startswith('darwin'):
-        return _run_command_and_get_output(['mandoc', '-O', 'fragment,man=/cgi-bin?%S+%N', '-T', 'html', path])
+        return _run_command_and_get_output(['mandoc', '-O', 'toc,fragment,man=/cgi-bin?%S+%N', '-T', 'html', path])
     else:
         return _run_command_and_get_output(['man2html', path])
 
