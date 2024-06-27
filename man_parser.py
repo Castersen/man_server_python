@@ -45,9 +45,9 @@ def _convert_page(path: str):
 
 def _post_process_page(page: str, theme: str, name: str):
     if sys.platform.startswith('darwin'):
-        sections = re.findall(r'(<a class="permalink"\shref="[^<]*</a>)', page)
+        sections = re.findall(r'(<a class="permalink"\shref="[^"]*">[^<]*</a>)', page, re.IGNORECASE)
     else:
-        sections = re.findall(r'<DT>(<A\sHREF="[^"]*">[^<]*</A>)', page)
+        sections = re.findall(r'<dt>(<a\shref="[^"]*">[^<]*</a>)', page, re.IGNORECASE)
 
     section_html = ''.join(section for section in sections)
 
