@@ -1,5 +1,6 @@
 from pathlib import Path
 import sys
+import os
 
 STARTUP_PAGE = 'startup_page.html'
 TEMPLATE_PAGE = 'template.html'
@@ -16,6 +17,18 @@ THEME_KEY = '/*Theme*/'
 
 CACHE_DIR = Path('cache')
 CACHE = [man_page for man_page in CACHE_DIR.iterdir()]
+
+POTENTIALS = Path('man_pages.txt')
+
+def get_all_files_in_dirs(dirs: list[Path]):
+    files = set()
+
+    for dir in dirs:
+        if dir.is_dir():
+            for file_path in dir.glob('**/*'):
+                files.add(''.join(file_path.name.split('.')[0:2]))
+
+    return sorted(files)
 
 def add_theme(page: str, theme_name: str):
     theme_name = THEME_DIR / (theme_name + '.css')

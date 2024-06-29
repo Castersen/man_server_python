@@ -32,6 +32,7 @@
         .submit-form input {
             font-family: 'Courier New', Courier, monospace;
             background-color: white;
+            color: black;
             border: none;
             padding: 5px 20px;
         }
@@ -41,6 +42,15 @@
         }
         #error {
             color: red;
+        }
+        #option-container {
+            position: fixed;
+            font-family: monospace;
+            overflow-y: auto;
+            overflow-x: auto;
+
+            max-width: 700px;
+            max-height: 300px;
         }
         </style>
     </head>
@@ -52,7 +62,7 @@
         <form class="man-server-command-form" onsubmit="return formatQuery()">
             <div class="man-page-form">
                 <label for="man2html">Man Page:</label>
-                <input type="text" id="man2html" name="man2html">
+                <input type="text" autocomplete="off" id="man2html" name="man2html">
             </div>
             <div class="man-section-form">
                 <label for="section">Select Section:</label>
@@ -71,15 +81,93 @@
                 <input type="submit" value="Get Man Page">
             </div>
         </form>
-        <div id="error">
-            {error}
+        <div id="option-container">
+            <pre id="option">Pressing tab in the input displays all man pages that match the start</pre>
         </div>
+        <div id="error"></div>
     </div>
     <script>
+        const KEY = 'man_pages_data'
+        const EXISTENCE_KEY = 'man_pages_data_exists'
+
+        const ERROR_ELEMENT = document.getElementById('error')
+        const OPTION_ELEMENT = document.getElementById('option')
+
+        setup()
+
+        function setup() {
+            if (ERROR_ELEMENT.textContent != '')
+                OPTION_ELEMENT.textContent = ''
+
+            if (localStorage.getItem(EXISTENCE_KEY))
+                return
+
+            console.log('Fetching man pages')
+            fetch('/query-potentials')
+                .then(response => response.text())
+                .then(data => {
+                    localStorage.setItem(EXISTENCE_KEY, 'exists')
+                    localStorage.setItem(KEY, data)
+                })
+                .catch(error => console.log('Error fetching data:', error))
+        }
+
+        function queryStorage(value) {
+            let data = localStorage.getItem(KEY)
+            if (!data) return []
+
+            let longest = 0
+            let pages = []
+            for (manPage of data.split(',')) {
+                if (!manPage.trim().startsWith(value))
+                    continue
+
+                if (manPage.length > longest)
+                    longest = manPage.length
+
+                pages.push(manPage)
+            }
+
+            return formatColumns(pages, longest)
+        }
+
+        function formatColumns(pages, longest) {
+            let output = ''
+            let num = 0
+            let colWidth = longest + 2
+            let numOfColumns = 3
+
+            for (page of pages) {
+                const paddingLength = colWidth - page.length
+                const rPadding = ' '.repeat(paddingLength)
+
+                output += page + rPadding
+                if ((num + 1) % numOfColumns === 0)
+                    output += '\n'
+
+                num += 1
+            }
+
+            let left = (num % numOfColumns)
+            if (left != 0)
+                output += ' '.repeat(colWidth * (numOfColumns - left)) + '\n'
+
+            return output
+        }
+
+        document.getElementById('man2html').addEventListener('keydown', (event) => {
+            if (event.key == 'Tab') {
+                ERROR_ELEMENT.textContent = ''
+                const userInput = document.getElementById('man2html').value.trim()
+                OPTION_ELEMENT.textContent = queryStorage(userInput)
+                event.preventDefault()
+            }
+        })
+
         function formatQuery() {
             const section = document.getElementById('section').value;
             const manPage = document.getElementById('man2html').value;
-            const queryString = `cgi-bin/man2html?${section}+${manPage}`;
+            const queryString = `cgi-bin/man2html?${section}+${manPage}`
             window.location.href = queryString;
             return false;
         }

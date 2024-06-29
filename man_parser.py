@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 import re
 
-from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, add_theme
+from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, add_theme, get_all_files_in_dirs
 
 class Potentials:
     def __init__(self, pot_str: str, name: str, section: str):
@@ -13,6 +13,21 @@ class Potentials:
 
     def __str__(self):
         return f'Could not find man page for {self.name} section {self.section} did you mean: {self.pot_str}'
+
+# Used to setup autocomplete
+def setup():
+    if POTENTIALS.is_file():
+        return
+
+    man_dirs = _run_command_and_get_output(['manpath', '-q'])
+
+    if not man_dirs:
+        return
+
+    files = get_all_files_in_dirs(list(map(Path, man_dirs.rstrip('\n').split(':'))))
+
+    with open(POTENTIALS, 'w') as f:
+        f.write(','.join(file for file in files))
 
 def _run_command_and_get_output(command) -> str:
     try:

@@ -4,8 +4,8 @@ import urllib.parse
 import argparse
 from functools import lru_cache
 
-from man_parser import get_page, Potentials
-from locations import ERROR_KEY, StartPage, PageTheme
+from man_parser import get_page, setup,Potentials
+from locations import ERROR_KEY, POTENTIALS, StartPage, PageTheme, get_page_contents
 
 class ManPageHandler(http.server.SimpleHTTPRequestHandler):
     def __setup_200_headers(self):
@@ -32,7 +32,11 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
         return None, None
 
     def do_GET(self):
-        if self.path.startswith('/cgi-bin'):
+        if self.path.startswith('/query-potentials'):
+            self.__setup_200_headers()
+            self.wfile.write(get_page_contents(POTENTIALS).encode('utf-8'))
+
+        elif self.path.startswith('/cgi-bin'):
             query = urllib.parse.urlparse(self.path).query
 
             if not query:
@@ -63,6 +67,8 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def main():
+    setup()
+
     port = 8000
     host = 'localhost'
 
