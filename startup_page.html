@@ -10,24 +10,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
         .man-server-container {
-            text-align: center;
+            position: relative;
         }
         .man-server-header h1 {
             margin-bottom: 20px;
+            text-align: center;
         }
         .man-server-command-form {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        .man-server-command-form label {
-            padding-right: 10px;
-        }
-        .man-server-command-form div {
-            display: flex;
             align-items: center;
+            gap: 20px;
         }
         .submit-form input {
             font-family: 'Courier New', Courier, monospace;
@@ -42,15 +37,18 @@
         }
         #error {
             color: red;
+            text-align: center;
         }
         #option-container {
-            position: fixed;
-            font-family: monospace;
-            overflow-y: auto;
-            overflow-x: auto;
-
-            max-width: 700px;
-            max-height: 300px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #090909;
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border-radius: 10px;
         }
         </style>
     </head>
@@ -82,7 +80,7 @@
             </div>
         </form>
         <div id="option-container">
-            <pre id="option">Pressing tab in the input displays all man pages that match the start</pre>
+            <div id="option">Pressing tab in the input provides autocomplete suggestions, similar to the terminal</div>
         </div>
         <div id="error">{error}</div>
     </div>
