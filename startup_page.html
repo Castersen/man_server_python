@@ -88,10 +88,10 @@
     </div>
     <script>
         const KEY = 'man_pages_data'
-        const EXISTENCE_KEY = 'man_pages_data_exists'
-
         const ERROR_ELEMENT = document.getElementById('error')
         const OPTION_ELEMENT = document.getElementById('option')
+        var manData = []
+        var manLongest = 0
 
         setup()
 
@@ -99,60 +99,79 @@
             if (ERROR_ELEMENT.textContent != '')
                 OPTION_ELEMENT.textContent = ''
 
-            if (localStorage.getItem(EXISTENCE_KEY))
+            if(localStorage.key(0) != null) {
+                manData = localStorage.getItem(KEY).split(',')
+                manLongest = Math.max(...manData.map(manPage => manPage.length))
                 return
+            }
 
             console.log('Fetching man pages')
             fetch('/query-potentials')
                 .then(response => response.text())
                 .then(data => {
-                    localStorage.setItem(EXISTENCE_KEY, 'exists')
                     localStorage.setItem(KEY, data)
+                    manData = data.split(',')
+                    manLongest = Math.max(...manData.map(manPage => manPage.length))
                 })
                 .catch(error => console.log('Error fetching data:', error))
         }
 
         function queryStorage(value) {
-            let data = localStorage.getItem(KEY)
-            if (!data) return []
+            if (!value)
+                return formatColumns(0, manData.length, manLongest)
 
-            let longest = 0
-            let pages = []
-            for (manPage of data.split(',')) {
-                if (!manPage.trim().startsWith(value))
-                    continue
+            let startIndex = binarySearch(value)
+            if (startIndex == -1)
+                return ''
 
-                if (manPage.length > longest)
-                    longest = manPage.length
+            let endIndex = startIndex;
+            let longest = manData[startIndex].length
+            for (; endIndex < manData.length; ++endIndex) {
+                if (!manData[endIndex].startsWith(value))
+                    break
 
-                pages.push(manPage)
+                if (manData[endIndex].length > longest)
+                    longest = manData[endIndex].length
             }
 
-            return formatColumns(pages, longest)
+            return formatColumns(startIndex, endIndex, longest)
         }
 
-        function formatColumns(pages, longest) {
-            let output = ''
+        // Data is sorted alphabetically
+        function binarySearch(value) {
+            let low = 0;
+            let high = manData.length - 1;
+
+            while (low <= high) {
+                let mid = ((low + high) / 2) | 0
+                if (manData[mid] < value)
+                    low = mid + 1
+                else
+                    high = mid - 1
+            }
+
+            return (manData[low] && manData[low].startsWith(value)) ? low : -1;
+        }
+
+        function formatColumns(startIndex, endIndex, longest) {
+            let output = []
             let num = 0
-            let colWidth = longest + 2
-            let numOfColumns = 3
+            const colWidth = longest + 2
+            const numOfColumns = 3
+            const spaces = ' '.repeat(colWidth)
 
-            for (page of pages) {
-                const paddingLength = colWidth - page.length
-                const rPadding = ' '.repeat(paddingLength)
-
-                output += page + rPadding
+            for (let i = startIndex; i < endIndex; ++i) {
+                output.push(manData[i] + spaces.slice(0, colWidth - manData[i].length))
                 if ((num + 1) % numOfColumns === 0)
-                    output += '\n'
-
+                    output.push('\n')
                 num += 1
             }
 
             let left = (num % numOfColumns)
             if (left != 0)
-                output += ' '.repeat(colWidth * (numOfColumns - left)) + '\n'
+                output.push(' '.repeat(colWidth * (numOfColumns - left)) + '\n')
 
-            return output
+            return output.join('')
         }
 
         document.getElementById('man2html').addEventListener('keydown', (event) => {
