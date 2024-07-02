@@ -52,15 +52,15 @@ def _find_page(name: str, section: str) -> str | Perror:
     if not locations:
         return could_not_find(name, section)
 
-    pot_str = ''
+    pot_str = set()
     for l in locations.rstrip('\n').split('\n'):
         pot_name, pot_section = _parse_man_name_and_section(Path(l))
-        pot_str += pot_name + ' ' + pot_section + ' '
+        pot_str.add(f'{pot_name} {pot_section}')
 
         if section in pot_section:
             return l
 
-    return could_not_find_potentials(name, section, pot_str)
+    return could_not_find_potentials(name, section, ' '.join(pot_str))
 
 def _convert_page(path: str) -> str | Perror:
     if sys.platform.startswith('darwin'):
