@@ -4,7 +4,7 @@ import urllib.parse
 import argparse
 from functools import lru_cache
 
-from man_parser import get_page, setup,Potentials
+from man_parser import get_page, setup_autocomplete,Potentials
 from locations import ERROR_KEY, POTENTIALS, StartPage, PageTheme, get_page_contents
 
 class ManPageHandler(http.server.SimpleHTTPRequestHandler):
@@ -67,8 +67,6 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def main():
-    setup()
-
     port = 8000
     host = 'localhost'
 
@@ -76,6 +74,8 @@ def main():
     parser.add_argument('-p', '--port', type=int, help='Set port')
     parser.add_argument('-i', '--host', type=str, help='Set host')
     parser.add_argument('-t', '--theme', type=str, help='Set theme')
+    parser.add_argument('-r', '--refresh', action='store_true', 
+                        help='Update the generated list of man pages on your system')
 
     args = parser.parse_args()
 
@@ -85,6 +85,8 @@ def main():
         host = args.host
     if (args.theme):
         PageTheme.page_theme = args.theme
+    if (args.refresh or not POTENTIALS.is_file()):
+        setup_autocomplete()
 
     class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         daemon_threads = True

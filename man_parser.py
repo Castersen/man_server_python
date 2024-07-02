@@ -14,11 +14,7 @@ class Potentials:
     def __str__(self):
         return f'Could not find man page for {self.name} section {self.section} did you mean: {self.pot_str}'
 
-# Used to setup autocomplete
-def setup():
-    if POTENTIALS.is_file():
-        return
-
+def setup_autocomplete():
     man_dirs = _run_command_and_get_output(['manpath', '-q'])
 
     if not man_dirs:
