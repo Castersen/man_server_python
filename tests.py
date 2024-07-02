@@ -3,9 +3,10 @@ import socketserver
 import threading
 import urllib.request
 
-from man_parser import get_page, _page_in_cache, Potentials
+from man_parser import get_page, _page_in_cache
 from man_server import ManPageHandler
 from locations import ERROR_KEY, StartPage
+from errors import Perror, could_not_find, please_provide_name
 
 DEFAULT_THEME = 'default'
 
@@ -18,11 +19,12 @@ class TestFindPage(unittest.TestCase):
 
     def test_find_failure(self):
         result = get_page('fake', '1', DEFAULT_THEME)
-        self.assertTrue(result == None)
+        self.assertTrue(isinstance(result, Perror))
+        self.assertTrue(could_not_find('fake', '1').message == result.message)
 
     def test_find_possible(self):
         result = get_page('man', '10', DEFAULT_THEME)
-        self.assertTrue(isinstance(result, Potentials))
+        self.assertTrue(isinstance(result, Perror))
 
 class ManTCPTestServer(socketserver.TCPServer):
     allow_reuse_address = True
@@ -45,14 +47,14 @@ class TestServer(unittest.TestCase):
     def test_startup_page_error(self):
         with urllib.request.urlopen(f'http://localhost:{PORT}/cgi-bin/man/man2html?10+fake') as response:
             self.assertEqual(response.status, 200)
-            error_msg = 'Could not find man page for fake section 10' 
+            error_msg = could_not_find('fake', '10').message
             error_bytes = bytes(StartPage.start_page.replace(ERROR_KEY, error_msg).encode('utf-8'))
             self.assertEqual(response.read(), error_bytes)
 
     def test_startup_page_no_name(self):
         with urllib.request.urlopen(f'http://localhost:{PORT}/cgi-bin/man/man2html?10') as response:
             self.assertEqual(response.status, 200)
-            error_msg = 'Please provide man page name' 
+            error_msg = please_provide_name()
             error_bytes = bytes(StartPage.start_page.replace(ERROR_KEY, error_msg).encode('utf-8'))
             self.assertEqual(response.read(), error_bytes)
 

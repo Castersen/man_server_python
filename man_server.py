@@ -4,8 +4,9 @@ import urllib.parse
 import argparse
 from functools import lru_cache
 
-from man_parser import get_page, setup_autocomplete,Potentials
+from man_parser import get_page, setup_autocomplete
 from locations import ERROR_KEY, POTENTIALS, StartPage, PageTheme, get_page_contents
+from errors import Perror, please_provide_name
 
 class ManPageHandler(http.server.SimpleHTTPRequestHandler):
     def __setup_200_headers(self):
@@ -46,17 +47,13 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
             section, name = self.__parse_page_name(query)
 
             if not name:
-                self.__send_start_page_with_error('Please provide man page name')
+                self.__send_start_page_with_error(please_provide_name())
                 return
 
             man_page_html = get_page(name, section, PageTheme.page_theme)
 
-            if not man_page_html:
-                self.__send_start_page_with_error(f'Could not find man page for {name} section {section}')
-                return
-
-            if type(man_page_html) is Potentials:
-                self.__send_start_page_with_error(str(man_page_html))
+            if type(man_page_html) is Perror:
+                self.__send_start_page_with_error(man_page_html.message)
                 return
 
             self.__setup_200_headers()
