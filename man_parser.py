@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 import re
 
-from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, add_theme, get_all_files_in_dirs
+from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, add_theme, get_all_files_in_dirs, parse_man_name, parse_section
 
 class Potentials:
     def __init__(self, pot_str: str, name: str, section: str):
@@ -44,13 +44,14 @@ def _find_page(name: str, section: str):
 
     pot_str = ''
     for l in locations.rstrip('\n').split('\n'):
-        n,s = Path(l).name.split('.')[0:2]
-        pot_str += n + ' ' + s + ' '
+        pot_name = parse_man_name(Path(l))
+        pot_section  = parse_section(Path(l))
+        pot_str += pot_name + ' ' + pot_section + ' '
 
-        if section in s:
+        if section in pot_section:
             return l
 
-    return Potentials(pot_str, name, section) if pot_str else None
+    return Potentials(pot_str, name, section)
 
 def _convert_page(path: str):
     if sys.platform.startswith('darwin'):

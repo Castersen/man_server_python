@@ -1,6 +1,6 @@
 from pathlib import Path
 import sys
-import os
+import re
 
 STARTUP_PAGE = 'startup_page.html'
 TEMPLATE_PAGE = 'template.html'
@@ -24,11 +24,30 @@ def get_all_files_in_dirs(dirs: list[Path]):
     files = set()
 
     for dir in dirs:
-        if dir.is_dir():
-            for file_path in dir.glob('**/*'):
-                files.add(''.join(file_path.name.split('.')[0:2]))
+        for file_path in dir.glob('**/*'):
+            if file_path.is_dir():
+                continue
+            name = parse_man_name(file_path)
+            section = parse_section(file_path)
+
+            files.add(name + section)
 
     return sorted(files)
+
+def parse_man_name(path: Path):
+    name = path.name
+
+    # Remove file extension
+    suffix_pattern = re.compile(r'\.([glx]z|bz2|lzma|Z)$')
+    name = re.sub(suffix_pattern, '', name)
+
+    if '.' in name:
+        name = '.'.join(name.split('.')[:-1])
+
+    return name
+
+def parse_section(path: Path):
+    return path.parent.name.replace('man', '')
 
 def add_theme(page: str, theme_name: str):
     theme_name = THEME_DIR / (theme_name + '.css')
