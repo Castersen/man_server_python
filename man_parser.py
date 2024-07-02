@@ -2,9 +2,22 @@ from subprocess import Popen, PIPE
 from pathlib import Path
 import sys
 import re
+from typing import Tuple, List
 
-from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, add_theme, get_all_files_in_dirs, parse_man_name, parse_section
+from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, add_theme
 from errors import Perror, could_not_run_command, could_not_find, could_not_find_potentials
+
+def _parse_man_name_and_section(path: Path) -> Tuple[str, str]:
+    name = path.name
+
+    # Remove file extension
+    suffix_pattern = re.compile(r'\.([glx]z|bz2|lzma|Z)$')
+    name = re.sub(suffix_pattern, '', name)
+
+    if '.' in name:
+        name = '.'.join(name.split('.')[:-1])
+
+    return name, path.parent.name.replace('man', '')
 
 def setup_autocomplete() -> None:
     man_dirs = _run_command_and_get_output(['manpath', '-q'])
@@ -13,12 +26,20 @@ def setup_autocomplete() -> None:
         print(man_dirs.message)
         return
 
-    files = get_all_files_in_dirs(list(map(Path, man_dirs.rstrip('\n').split(':'))))
+    dirs = list(map(Path, man_dirs.rstrip('\n').split(':')))
+
+    pages = set()
+    for dir in dirs:
+        for file_path in dir.glob('**/*'):
+            if file_path.is_dir():
+                continue
+            name, section = _parse_man_name_and_section(file_path)
+            pages.add(name + section)
 
     with open(POTENTIALS, 'w') as f:
-        f.write(','.join(file for file in files))
+        f.write(','.join(page for page in sorted(pages)))
 
-def _run_command_and_get_output(command: list[str]) -> str | Perror:
+def _run_command_and_get_output(command: List[str]) -> str | Perror:
     try:
         with Popen(command, stdout=PIPE) as proc:
             return proc.stdout.read().decode('utf-8')
@@ -33,8 +54,7 @@ def _find_page(name: str, section: str) -> str | Perror:
 
     pot_str = ''
     for l in locations.rstrip('\n').split('\n'):
-        pot_name = parse_man_name(Path(l))
-        pot_section  = parse_section(Path(l))
+        pot_name, pot_section = _parse_man_name_and_section(Path(l))
         pot_str += pot_name + ' ' + pot_section + ' '
 
         if section in pot_section:
