@@ -1,6 +1,5 @@
 from pathlib import Path
 import sys
-import re
 
 STARTUP_PAGE = 'startup_page.html'
 TEMPLATE_PAGE = 'template.html'
