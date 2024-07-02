@@ -26,11 +26,8 @@ def add_theme(page: str, theme_name: str):
     if theme_name not in THEMES:
         theme_name = DEFAULT_THEME
 
-    return __add_theme(page, theme_name)
-
-def __add_theme(page: str, theme: Path):
-        with open(theme, 'r') as f:
-            return page.replace(THEME_KEY, f.read())
+    with open(theme_name, 'r') as f:
+        return page.replace(THEME_KEY, f.read())
 
 def get_page_contents(page):
     with open(page, 'r') as f:
