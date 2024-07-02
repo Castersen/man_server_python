@@ -2,13 +2,23 @@ import unittest
 import socketserver
 import threading
 import urllib.request
+from pathlib import Path
 
-from man_parser import get_page, _page_in_cache
+from man_parser import get_page, _page_in_cache, _parse_man_name_and_section
 from man_server import ManPageHandler
 from locations import ERROR_KEY, StartPage
 from errors import Perror, could_not_find, please_provide_name
 
 DEFAULT_THEME = 'default'
+
+class TestParsing(unittest.TestCase):
+    def test_parse_path_correctly(self):
+        sys_conf_n, sys_conf_s = _parse_man_name_and_section(Path('/usr/share/man/man5/systemd-system.conf.5.gz'))
+        man_n, man_s = _parse_man_name_and_section(Path('/usr/share/man/man1/man.1.gz'))
+        self.assertEqual(sys_conf_n, 'systemd-system.conf')
+        self.assertEqual(sys_conf_s, '5')
+        self.assertEqual(man_n, 'man')
+        self.assertEqual(man_s, '1')
 
 class TestFindPage(unittest.TestCase):
     def test_find_success(self):
