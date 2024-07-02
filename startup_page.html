@@ -54,18 +54,28 @@
             padding: 10px;
         }
         #option-container button {
+            width: 100%;
+        }
+        button:hover {
+            cursor: pointer;
+            background-color: rgb(234, 234, 234);
+        }
+        button {
             background-color: white;
             color: black;
             font-family: monospace;
-            width: 100%;
         }
-        #option-container button:hover {
-            cursor: pointer;
-            background-color: rgb(234, 234, 234);
+        #clear-storage {
+            position: absolute;
+            top: 20px;
+            right: 20px;
         }
         </style>
     </head>
 <body>
+    <button id="clear-storage" onclick="clearAndReset()">
+        Clear local storage and refetch man data
+    </button>
     <div class="man-server-container">
         <div class="man-server-header">
             <h1>Man Page Server</h1>
@@ -129,6 +139,11 @@
                     console.log('Error fetching data:', error)
                     ERROR_ELEMENT.textContent = 'Error fetching autocomplete data tab will not work'
                 })
+        }
+
+        function clearAndReset() {
+            localStorage.clear()
+            setup()
         }
 
         function queryStorage(value) {
