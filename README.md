@@ -4,17 +4,19 @@ View your local man pages in the browser.
 
 https://github.com/Castersen/man_server_python/assets/90943238/7d9e031b-f1c7-4466-ac3b-1f24c182e471
 
-Supports various themes, follows links, caches converted pages, shows potential man pages if section is wrong.
+Supports various themes, follows links, caches converted pages, supports possibilities, shows potential man pages if section is wrong.
 
 ## Dependencies 
 
 <b>Linux</b>  
 man2html  
 man  
+manpath
 
 <b>Mac</b>  
 mandoc  
 man  
+manpath
 
 ## How to use
 
@@ -52,6 +54,20 @@ Simply navigate to the themes directory, and copy one of the existing themes, re
 `python3 man_server.py -t [new_theme_name]`
 
 Of course you can just generate your own css file from scratch but modifying one of the existing ones gives a better idea of what parts should be modified. Ultimately, have fun!
+
+## Displaying Possibilities
+
+One of the most useful aspects of the terminal is being able to press tab and get suggestions or autocomplete. This feature is supported directly in the browser. For example if you want to see all the man pages that start with mem just type mem and press tab. This also shows the section of that man page so if a page has multiple sections you can see all of them. This works by calling `manpath -q` for the directories man will look in and grabbing all the files within those directories. This is only done once. If you install a library or gain additional man pages you will need to run:
+
+`python3 man_server.py -r`
+
+This will refresh the file that contains all of the names. You will also have to clear localstorage in your browser and refresh to fetch the new file names.
+
+Pressing tab with an empty input buffer will display all man page names and sections.
+
+Example (typing mem and pressing tab)
+
+<image src="showcase/autocomplete.png"/>
 
 ## Internals
 
