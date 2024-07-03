@@ -37,6 +37,10 @@ To change the theme
 
 `python3 man_server.py -t [theme]`
 
+To list all themes available on your platform
+
+`python3 man_server.py -l`
+
 To see all options
 
 `python3 man_server.py -h`

@@ -5,7 +5,7 @@ import argparse
 from functools import lru_cache
 
 from man_parser import get_page, setup_autocomplete
-from locations import ERROR_KEY, POTENTIALS, StartPage, PageTheme, get_page_contents
+from locations import ERROR_KEY, POTENTIALS, StartPage, PageTheme, get_page_contents, THEMES
 from errors import Perror, please_provide_name
 
 class ManPageHandler(http.server.SimpleHTTPRequestHandler):
@@ -75,9 +75,14 @@ def main():
     parser.add_argument('-r', '--refresh', action='store_true', 
                         help='Update the generated list of man pages on your system')
     parser.add_argument('-a', '--allow', action='store_true', help='Allow reuse of address')
+    parser.add_argument('-l', '--list', action='store_true',
+                        help='list all theme names (this will not start the server)')
 
     args = parser.parse_args()
 
+    if (args.list):
+        print(', '.join(theme.name.rstrip('.css') for theme in THEMES))
+        return
     if (args.port):
         port = args.port
     if (args.host):
