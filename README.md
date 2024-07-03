@@ -59,6 +59,10 @@ To see all options
 
 <img src="showcase/tropical-dust.png">
 
+<b>mustard</b>: (linux only) Dark theme with highlighting, does not include side nav bar
+
+<img src="showcase/mustard.png">
+
 ## Creating New Themes
 
 Simply navigate to the themes directory, and copy one of the existing themes, renaming it to whatever you would like the new theme to be called. Then modify the css file save it and run:
