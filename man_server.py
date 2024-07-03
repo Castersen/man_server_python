@@ -66,6 +66,7 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
 def main():
     port = 8000
     host = 'localhost'
+    allow_reuse = False
 
     parser = argparse.ArgumentParser(description='Man server options')
     parser.add_argument('-p', '--port', type=int, help='Set port')
@@ -73,6 +74,7 @@ def main():
     parser.add_argument('-t', '--theme', type=str, help='Set theme')
     parser.add_argument('-r', '--refresh', action='store_true', 
                         help='Update the generated list of man pages on your system')
+    parser.add_argument('-a', '--allow', action='store_true', help='Allow reuse of address')
 
     args = parser.parse_args()
 
@@ -80,6 +82,8 @@ def main():
         port = args.port
     if (args.host):
         host = args.host
+    if (args.allow):
+        allow_reuse = args.allow
     if (args.theme):
         PageTheme.page_theme = args.theme
     if (args.refresh or not POTENTIALS.is_file()):
@@ -87,6 +91,7 @@ def main():
 
     class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         daemon_threads = True
+        allow_reuse_address = allow_reuse
 
     print(f'Starting server at {host} port {port}')
     with ThreadingTCPServer((host, port), ManPageHandler) as server:
