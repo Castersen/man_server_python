@@ -8,6 +8,8 @@ Supports various themes, follows links, caches converted pages, supports possibi
 
 ## Dependencies 
 
+python3.10+
+
 <b>Linux</b>  
 man2html  
 man  
@@ -71,11 +73,9 @@ Example (typing mem and pressing tab)
 
 ## Internals
 
-Converting the man pages to html is done by <b>mandoc</b> (mac) or <b>man2html</b> (linux) the pages themselves are found using <b>man -wa</b> and then parsing the output for the correct section. Every time a page is converted it is stored in the cache directory and subsequently retrieved from there.
+Converting the man pages to html is done by <b>mandoc</b> (mac) or <b>man2html</b> (linux) the pages themselves are found using <b>man -wa</b> and then parsing the output for the correct section. Every time a page is converted it is stored in the cache directory and subsequently retrieved from there. This means if a man page is updated and you want to view the newest version you must clear the cache (`rm cache/*.html`).
 
 The output is then post processed before being sent to the client. This involves reading the index to generate the side view for easy access. Then <b>template.html</b> is read and the relevant parts of the man page are placed in the template. This is where the themes are loaded.
-
-The server simply makes calls to <b>man_parser.py</b> after receiving a request with a valid query. If an invalid query is received the server sends a page with the appropriate error message. If man_parser was able to find potential man pages, i.e. you put the correct name but wrong section it will return a `Potential` object with a `__str__` method containing the potential man pages. This will be shown. If no query is received the server displays <b>startup_page.html</b>.
 
 ## Tests
 
