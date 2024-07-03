@@ -250,7 +250,7 @@
 
         function formatQuery() {
             const section = document.getElementById('section').value
-            const manPage = document.getElementById('man2html').value
+            const manPage = document.getElementById('man2html').value.trim()
             const queryString = `cgi-bin/man2html?${section}+${manPage}`
             window.location.href = queryString
             return false
