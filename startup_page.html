@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
         <title>Man Page Server</title>
         <style>
         body {
@@ -26,7 +27,7 @@
             align-items: center;
             gap: 20px;
         }
-        .submit-form input {
+        .submit-form input, #view-suggestions {
             font-family: 'Courier New', Courier, monospace;
             background-color: white;
             color: black;
@@ -60,7 +61,7 @@
         #option-container button {
             width: 100%;
         }
-        button:hover {
+        button:hover, #view-suggestions:hover {
             cursor: pointer;
             background-color: rgb(234, 234, 234);
         }
@@ -76,6 +77,36 @@
         }
         .hidden {
             display: none;
+        }
+        #view-suggestions {
+            display: none;
+        }
+        @media screen and (max-width: 650px) {
+            .man-server-command-form {
+                flex-direction: column;
+            }
+            .man-page-form, .man-section-form, .submit-form, #view-suggestions {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+                font-size: 16px;
+            }
+            #view-suggestions {
+                display: block;
+                margin-top: 20px;
+            }
+            #view-suggestions, .submit-form input {
+                border-radius: 10px;
+                font-weight: bold;
+                font-size: 16px;
+            }
+            #man2html {
+                font-size: 16px;
+            }
+            #clear-storage {
+                right: auto;
+            }
         }
         </style>
     </head>
@@ -110,6 +141,9 @@
                 <input type="submit" value="Get Man Page">
             </div>
         </form>
+        <button id="view-suggestions" onclick="viewSuggestions()">
+            View Suggestions
+        </button>
         <div id="option-container">
             <div id="option">Pressing tab in the input provides autocomplete suggestions, similar to the terminal, format is [name][section] (no space separator)</div>
         </div>
@@ -163,6 +197,10 @@
         function clearAndReset() {
             localStorage.clear()
             setup()
+        }
+
+        function viewSuggestions() {
+            displaySuggestions()
         }
 
         function queryStorage(value) {
@@ -222,31 +260,35 @@
         document.getElementById('man2html').addEventListener('keydown', (event) => {
             if (event.key === 'Tab') {
                 event.preventDefault()
-                ERROR_ELEMENT.textContent = ''
-
-                const userInput = INPUT_ELEMENT.value.trim()
-                if (userInput === previousInput)
-                    return
-
-                previousInput = userInput
-                OPTION_ELEMENT.classList.remove('hidden')
-                const { startIndex, endIndex, longest } = queryStorage(userInput)
-
-                const totalMatches = endIndex - startIndex
-                const truncatedEnd = startIndex + 50 > endIndex ? endIndex : startIndex + 50
-
-                OPTION_ELEMENT.textContent = formatColumns(startIndex, truncatedEnd, longest)
-
-                if (totalMatches > 50) {
-                    const showMoreButton = document.createElement('button')
-                    showMoreButton.textContent = `Show more (${totalMatches - 50} more)`
-                    showMoreButton.onclick = () => {
-                        OPTION_ELEMENT.textContent = formatColumns(startIndex, endIndex, longest)
-                    }
-                    OPTION_ELEMENT.appendChild(showMoreButton)
-                }
+                displaySuggestions()
             }
         })
+
+        function displaySuggestions() {
+            ERROR_ELEMENT.textContent = ''
+
+            const userInput = INPUT_ELEMENT.value.trim()
+            if (userInput === previousInput)
+                return
+
+            previousInput = userInput
+            OPTION_ELEMENT.classList.remove('hidden')
+            const { startIndex, endIndex, longest } = queryStorage(userInput)
+
+            const totalMatches = endIndex - startIndex
+            const truncatedEnd = startIndex + 50 > endIndex ? endIndex : startIndex + 50
+
+            OPTION_ELEMENT.textContent = formatColumns(startIndex, truncatedEnd, longest)
+
+            if (totalMatches > 50) {
+                const showMoreButton = document.createElement('button')
+                showMoreButton.textContent = `Show more (${totalMatches - 50} more)`
+                showMoreButton.onclick = () => {
+                    OPTION_ELEMENT.textContent = formatColumns(startIndex, endIndex, longest)
+                }
+                OPTION_ELEMENT.appendChild(showMoreButton)
+            }
+        }
 
         function formatQuery() {
             const section = document.getElementById('section').value
