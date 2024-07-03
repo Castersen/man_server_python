@@ -1,5 +1,7 @@
 # Man Page Server
 
+![Python Version](https://img.shields.io/badge/python-3.10-brightgreen.svg)
+
 View your local man pages in the browser.
 
 https://github.com/Castersen/man_server_python/assets/90943238/7d9e031b-f1c7-4466-ac3b-1f24c182e471
