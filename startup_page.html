@@ -70,6 +70,9 @@
             top: 20px;
             right: 20px;
         }
+        .hidden {
+            display: none;
+        }
         </style>
     </head>
 <body>
@@ -112,33 +115,45 @@
         const KEY = 'man_pages_data'
         const ERROR_ELEMENT = document.getElementById('error')
         const OPTION_ELEMENT = document.getElementById('option')
-        var manData = []
-        var manLongest = 0
+        const INPUT_ELEMENT = document.getElementById('man2html')
+        let manData = []
+        let manLongest = 0
+        let previousInput = null
 
         setup()
 
         function setup() {
-            if (ERROR_ELEMENT.textContent != '')
-                OPTION_ELEMENT.textContent = ''
+            if (ERROR_ELEMENT.textContent !== '')
+                OPTION_ELEMENT.classList.add('hidden')
 
-            if(localStorage.key(0) != null) {
-                manData = localStorage.getItem(KEY).split(',')
-                manLongest = Math.max(...manData.map(manPage => manPage.length))
-                return
-            }
+            if(localStorage.key(0) !== null)
+                initializeData(localStorage.getItem(KEY))
+            else
+                fetchManPotentials()
+        }
 
+        function fetchManPotentials() {
             console.log('Fetching man pages')
             fetch('/query-potentials')
                 .then(response => response.text())
                 .then(data => {
                     localStorage.setItem(KEY, data)
-                    manData = data.split(',')
-                    manLongest = Math.max(...manData.map(manPage => manPage.length))
+                    initializeData(data)
                 })
                 .catch(error => {
                     console.log('Error fetching data:', error)
-                    ERROR_ELEMENT.textContent = 'Error fetching autocomplete data tab will not work'
+                    ERROR_ELEMENT.textContent = 'Error fetching autocomplete data, pressing tab will not work'
                 })
+        }
+
+        function initializeData(data) {
+            manData = data.split(',')
+            let longest = 0
+            for (let i = 0; i < manData.length; ++i) {
+                if (manData[i].length > longest)
+                    longest = manData[i].length
+            }
+            manLongest = longest
         }
 
         function clearAndReset() {
@@ -148,32 +163,28 @@
 
         function queryStorage(value) {
             if (!value)
-                return {startIndex: 0, endIndex: manData.length, longest: manLongest}
+                return { startIndex: 0, endIndex: manData.length, longest: manLongest }
 
             let startIndex = findFirst(value)
             if (startIndex == -1)
-                return {startIndex: 0, endIndex: 0, longest: 0}
+                return { startIndex: 0, endIndex: 0, longest: 0 }
 
             let endIndex = startIndex;
             let longest = manData[startIndex].length
-            for (; endIndex < manData.length; ++endIndex) {
-                if (!manData[endIndex].startsWith(value))
-                    break
 
+            for (; endIndex < manData.length && manData[endIndex].startsWith(value); ++endIndex) {
                 if (manData[endIndex].length > longest)
                     longest = manData[endIndex].length
             }
 
-            return {startIndex: startIndex, endIndex: endIndex, longest: longest}
+            return { startIndex, endIndex, longest}
         }
 
         // Data is sorted alphabetically
         function findFirst(value) {
-            let low = 0
-            let high = manData.length - 1
-
+            let low = 0, high = manData.length - 1
             while (low <= high) {
-                let mid = ((low + high) / 2) | 0
+                const mid = ((low + high) / 2) | 0
                 if (manData[mid] < value)
                     low = mid + 1
                 else
@@ -198,50 +209,47 @@
             }
 
             let left = (num % numOfColumns)
-            if (left != 0)
+            if (left !== 0)
                 output.push(' '.repeat(colWidth * (numOfColumns - left)) + '\n')
 
             return output.join('')
         }
 
-        let previousInput = null
         document.getElementById('man2html').addEventListener('keydown', (event) => {
-            if (event.key == 'Tab') {
+            if (event.key === 'Tab') {
+                event.preventDefault()
                 ERROR_ELEMENT.textContent = ''
-                const userInput = document.getElementById('man2html').value.trim()
 
-                if (userInput === previousInput) {
-                    event.preventDefault()
+                const userInput = INPUT_ELEMENT.value.trim()
+                if (userInput === previousInput)
                     return
-                }
 
                 previousInput = userInput
-                const manRes = queryStorage(userInput)
-                const totalMatches = manRes.endIndex - manRes.startIndex
+                OPTION_ELEMENT.classList.remove('hidden')
+                const { startIndex, endIndex, longest } = queryStorage(userInput)
 
-                if (totalMatches < 50) {
-                    OPTION_ELEMENT.textContent = formatColumns(manRes.startIndex, manRes.endIndex, manRes.longest)
-                } else {
-                    OPTION_ELEMENT.textContent = formatColumns(manRes.startIndex, manRes.startIndex + 50, manRes.longest)
+                const totalMatches = endIndex - startIndex
+                const truncatedEnd = startIndex + 50 > endIndex ? endIndex : startIndex + 50
 
+                OPTION_ELEMENT.textContent = formatColumns(startIndex, truncatedEnd, longest)
+
+                if (totalMatches > 50) {
                     const showMoreButton = document.createElement('button')
                     showMoreButton.textContent = `Show more (${totalMatches - 50} more)`
                     showMoreButton.onclick = () => {
-                        OPTION_ELEMENT.textContent = formatColumns(manRes.startIndex, manRes.endIndex, manRes.longest)
+                        OPTION_ELEMENT.textContent = formatColumns(startIndex, endIndex, longest)
                     }
                     OPTION_ELEMENT.appendChild(showMoreButton)
                 }
-
-                event.preventDefault()
             }
         })
 
         function formatQuery() {
-            const section = document.getElementById('section').value;
-            const manPage = document.getElementById('man2html').value;
+            const section = document.getElementById('section').value
+            const manPage = document.getElementById('man2html').value
             const queryString = `cgi-bin/man2html?${section}+${manPage}`
-            window.location.href = queryString;
-            return false;
+            window.location.href = queryString
+            return false
         }
     </script>
 </body>
