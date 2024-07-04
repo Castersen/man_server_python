@@ -37,3 +37,6 @@ class PageTheme:
 
 class StartPage:
     start_page = get_page_contents(STARTUP_PAGE)
+
+class UseCache:
+    cache = True

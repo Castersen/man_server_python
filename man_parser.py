@@ -4,7 +4,7 @@ import sys
 import re
 from typing import Tuple, List
 
-from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, add_theme
+from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, UseCache, add_theme
 from errors import Perror, could_not_run_command, could_not_find, could_not_find_potentials
 
 def _parse_man_name_and_section(path: Path) -> Tuple[str, str]:
@@ -84,26 +84,24 @@ def _post_process_page(page: str, theme: str, name: str) -> str:
 def _format_cache_name(name: str, section: str) -> Path:
     return CACHE_DIR / (name + section + '.html')
 
-def _page_in_cache(name: str, section: str) -> str | None:
-    cache_name = _format_cache_name(name, section)
-    if cache_name in CACHE:
-        with open(cache_name, 'r') as f:
-            return f.read()
+def _fetch_page_from_cache(cache_path: Path) -> str:
+    with open(cache_path, 'r') as f:
+        return f.read()
 
-    return None
+def _page_in_cache(cache_path: Path) -> bool:
+    return cache_path in CACHE
 
-def _cache_page(html_page: str, name: str, section: str) -> None:
-    cache_name = _format_cache_name(name, section)
-    with open(cache_name, 'w') as f:
+def _cache_page(html_page: str, cache_path: Path) -> None:
+    with open(cache_path, 'w') as f:
         f.write(html_page)
 
-    CACHE.append(cache_name)
+    CACHE.append(cache_path)
 
 def get_page(name: str, section: str, theme: str) -> str | Perror:
-    cached_page = _page_in_cache(name, section)
+    cache_path = _format_cache_name(name, section)
 
-    if cached_page:
-        return _post_process_page(cached_page, theme, name)
+    if UseCache.cache and _page_in_cache(cache_path):
+        return _post_process_page(_fetch_page_from_cache(cache_path), theme, name)
 
     page_path = _find_page(name, section)
 
@@ -115,7 +113,7 @@ def get_page(name: str, section: str, theme: str) -> str | Perror:
     if type(html_page) is Perror:
         return html_page
 
-    _cache_page(html_page, name, section)
+    _cache_page(html_page, cache_path)
 
     final_html_page = _post_process_page(html_page, theme, name)
 

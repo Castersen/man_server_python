@@ -4,7 +4,7 @@ import threading
 import urllib.request
 from pathlib import Path
 
-from man_parser import get_page, _page_in_cache, _parse_man_name_and_section
+from man_parser import get_page, _page_in_cache, _parse_man_name_and_section, _format_cache_name
 from man_server import ManPageHandler
 from locations import ERROR_KEY, StartPage
 from errors import Perror, could_not_find, please_provide_name
@@ -24,7 +24,7 @@ class TestFindPage(unittest.TestCase):
     def test_find_success(self):
         result = get_page('man', '1', DEFAULT_THEME)
         self.assertTrue(isinstance(result, str))
-        result = _page_in_cache('man', '1')
+        result = _page_in_cache(_format_cache_name('man', '1'))
         self.assertTrue(result != None)
 
     def test_find_failure(self):

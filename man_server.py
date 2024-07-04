@@ -5,7 +5,7 @@ import argparse
 from functools import lru_cache
 
 from man_parser import get_page, setup_autocomplete
-from locations import ERROR_KEY, POTENTIALS, StartPage, PageTheme, get_page_contents, THEMES
+from locations import ERROR_KEY, POTENTIALS, StartPage, PageTheme, UseCache, get_page_contents, THEMES
 from errors import Perror, please_provide_name
 
 class ManPageHandler(http.server.SimpleHTTPRequestHandler):
@@ -77,6 +77,7 @@ def main():
     parser.add_argument('-a', '--allow', action='store_true', help='Allow reuse of address')
     parser.add_argument('-l', '--list', action='store_true',
                         help='list all theme names (this will not start the server)')
+    parser.add_argument('-n', '--no-cache', action='store_true', help='Do not fetch pages from cache')
 
     args = parser.parse_args()
 
@@ -93,6 +94,8 @@ def main():
         PageTheme.page_theme = args.theme
     if (args.refresh or not POTENTIALS.is_file()):
         setup_autocomplete()
+    if (args.no_cache):
+        UseCache.cache = False
 
     class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         daemon_threads = True
