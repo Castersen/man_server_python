@@ -5,7 +5,7 @@ import argparse
 from functools import lru_cache
 
 from man_parser import get_page, setup_autocomplete
-from locations import ERROR_KEY, POTENTIALS, StartPage, PageTheme, UseCache, get_page_contents, THEMES
+from locations import ERROR_KEY, POTENTIALS, THEMES, START_PAGE, get_page_contents, GlobalOptions
 from errors import Perror, please_provide_name
 
 class ManPageHandler(http.server.SimpleHTTPRequestHandler):
@@ -16,7 +16,7 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
 
     @lru_cache(maxsize=32)
     def __get_start_page(self, error_msg: str):
-        return StartPage.start_page.replace(ERROR_KEY, error_msg).encode('utf-8')
+        return START_PAGE.replace(ERROR_KEY, error_msg).encode('utf-8')
 
     def __send_start_page(self):
         self.__setup_200_headers()
@@ -50,7 +50,7 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
                 self.__send_start_page_with_error(please_provide_name())
                 return
 
-            man_page_html = get_page(name, section, PageTheme.page_theme)
+            man_page_html = get_page(name, section)
 
             if type(man_page_html) is Perror:
                 self.__send_start_page_with_error(man_page_html.message)
@@ -91,11 +91,11 @@ def main():
     if (args.allow):
         allow_reuse = args.allow
     if (args.theme):
-        PageTheme.page_theme = args.theme
+        GlobalOptions.page_theme = args.theme
+    if (args.no_cache):
+        GlobalOptions.use_cache = False
     if (args.refresh or not POTENTIALS.is_file()):
         setup_autocomplete()
-    if (args.no_cache):
-        UseCache.cache = False
 
     class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         daemon_threads = True

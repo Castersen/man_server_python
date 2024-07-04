@@ -1,8 +1,12 @@
 from pathlib import Path
 import sys
 
-STARTUP_PAGE = 'startup_page.html'
-TEMPLATE_PAGE = 'template.html'
+def get_page_contents(page: str) -> str:
+    with open(page, 'r') as f:
+        return f.read()
+
+START_PAGE = get_page_contents('startup_page.html')
+TEMPLATE_PAGE = get_page_contents('template.html')
 ERROR_KEY = '{error}'
 
 if sys.platform.startswith('darwin'):
@@ -19,8 +23,8 @@ CACHE = [man_page for man_page in CACHE_DIR.iterdir()]
 
 POTENTIALS = Path('man_pages.txt')
 
-def add_theme(page: str, theme_name: str):
-    theme_name = THEME_DIR / (theme_name + '.css')
+def add_theme(page: str):
+    theme_name = THEME_DIR / (GlobalOptions.page_theme + '.css')
 
     if theme_name not in THEMES:
         theme_name = DEFAULT_THEME
@@ -28,15 +32,6 @@ def add_theme(page: str, theme_name: str):
     with open(theme_name, 'r') as f:
         return page.replace(THEME_KEY, f.read())
 
-def get_page_contents(page):
-    with open(page, 'r') as f:
-        return f.read()
-
-class PageTheme:
+class GlobalOptions:
     page_theme: str = 'default'
-
-class StartPage:
-    start_page = get_page_contents(STARTUP_PAGE)
-
-class UseCache:
-    cache = True
+    use_cache: bool = True

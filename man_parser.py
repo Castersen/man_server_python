@@ -4,7 +4,7 @@ import sys
 import re
 from typing import Tuple, List
 
-from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, UseCache, add_theme
+from locations import TEMPLATE_PAGE, CACHE_DIR, CACHE, POTENTIALS, GlobalOptions, add_theme
 from errors import Perror, could_not_run_command, could_not_find, could_not_find_potentials
 
 def _parse_man_name_and_section(path: Path) -> Tuple[str, str]:
@@ -68,7 +68,7 @@ def _convert_page(path: str) -> str | Perror:
     else:
         return _run_command_and_get_output(['man2html', path])
 
-def _post_process_page(page: str, theme: str, name: str) -> str:
+def _post_process_page(page: str, name: str) -> str:
     if sys.platform.startswith('darwin'):
         sections = re.findall(r'(<a class="permalink"\shref="[^"]*">[^<]*</a>)', page, re.IGNORECASE)
     else:
@@ -76,10 +76,8 @@ def _post_process_page(page: str, theme: str, name: str) -> str:
 
     section_html = ''.join(section for section in sections)
 
-    with open(TEMPLATE_PAGE, 'r') as f:
-        html_page = f.read().replace('{sections}', section_html).replace('{data}', page).replace('{name}', name)
-
-    return add_theme(html_page, theme)
+    html_page = TEMPLATE_PAGE.replace('{sections}', section_html).replace('{data}', page).replace('{name}', name)
+    return add_theme(html_page)
 
 def _format_cache_name(name: str, section: str) -> Path:
     return CACHE_DIR / (name + section + '.html')
@@ -97,11 +95,11 @@ def _cache_page(html_page: str, cache_path: Path) -> None:
 
     CACHE.append(cache_path)
 
-def get_page(name: str, section: str, theme: str) -> str | Perror:
+def get_page(name: str, section: str) -> str | Perror:
     cache_path = _format_cache_name(name, section)
 
-    if UseCache.cache and _page_in_cache(cache_path):
-        return _post_process_page(_fetch_page_from_cache(cache_path), theme, name)
+    if GlobalOptions.use_cache and _page_in_cache(cache_path):
+        return _post_process_page(_fetch_page_from_cache(cache_path), name)
 
     page_path = _find_page(name, section)
 
@@ -115,6 +113,6 @@ def get_page(name: str, section: str, theme: str) -> str | Perror:
 
     _cache_page(html_page, cache_path)
 
-    final_html_page = _post_process_page(html_page, theme, name)
+    final_html_page = _post_process_page(html_page, name)
 
     return final_html_page
