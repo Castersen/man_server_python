@@ -81,6 +81,9 @@
         #view-suggestions {
             display: none;
         }
+        #radio-container {
+            margin-bottom: 10px;
+        }
         @media screen and (max-width: 650px) {
             .man-server-command-form {
                 flex-direction: column;
@@ -118,6 +121,12 @@
         <div class="man-server-header">
             <h1>Man Page Server</h1>
         </div>
+        <div id="radio-container">
+            <input type="radio" id="substring" value="substring" name="match" checked/>
+            <label for="substring">Match Substring</label>
+            <input type="radio" id="regex" value="regex" name="match"/>
+            <label for="regex">Match Regex</label>
+        </div>
         <form class="man-server-command-form" onsubmit="return formatQuery()">
             <div class="man-page-form">
                 <label for="man2html">Man Page:</label>
@@ -154,9 +163,11 @@
         const ERROR_ELEMENT = document.getElementById('error')
         const OPTION_ELEMENT = document.getElementById('option')
         const INPUT_ELEMENT = document.getElementById('man2html')
+        const REGEX_BUTTON = document.getElementById('regex')
         let manData = []
         let manLongest = 0
         let previousInput = null
+        let previousRegexState = null
 
         setup()
 
@@ -205,11 +216,11 @@
 
         function queryStorage(value) {
             if (!value)
-                return { startIndex: 0, endIndex: manData.length, longest: manLongest }
+                return { startIndex: 0, endIndex: manData.length, longest: manLongest, data: null }
 
             let startIndex = findFirst(value)
             if (startIndex == -1)
-                return { startIndex: 0, endIndex: 0, longest: 0 }
+                return { startIndex: 0, endIndex: 0, longest: 0, data: null }
 
             let endIndex = startIndex;
             let longest = manData[startIndex].length
@@ -219,7 +230,7 @@
                     longest = manData[endIndex].length
             }
 
-            return { startIndex, endIndex, longest}
+            return { startIndex, endIndex, longest, data: null }
         }
 
         // Data is sorted alphabetically
@@ -236,7 +247,7 @@
             return (manData[low] && manData[low].startsWith(value)) ? low : -1
         }
 
-        function formatColumns(startIndex, endIndex, longest) {
+        function formatColumns(startIndex, endIndex, longest, data) {
             let output = []
             let num = 0
             const colWidth = longest + 2
@@ -244,7 +255,11 @@
             const spaces = ' '.repeat(colWidth)
 
             for (let i = startIndex; i < endIndex; ++i) {
-                output.push(manData[i] + spaces.slice(0, colWidth - manData[i].length))
+                if (!data)
+                    output.push(manData[i] + spaces.slice(0, colWidth - manData[i].length))
+                else
+                    output.push(data[i] + spaces.slice(0, colWidth - data[i].length))
+
                 if ((num + 1) % numOfColumns === 0)
                     output.push('\n')
                 num += 1
@@ -264,27 +279,53 @@
             }
         })
 
+        function queryRegex(userInput) {
+            let re = null
+            try {
+                re = new RegExp(userInput.replace('/\\/g', '\\\\'))
+            } catch (e) {
+                ERROR_ELEMENT.textContent = 'Invalid Regular Expression'
+                return { startIndex: 0, endIndex: 0, longest: 0, data: null }
+            }
+
+            let matches = []
+            let longest = 0
+
+            for (let data of manData) {
+                if (data.match(re)) {
+                    matches.push(data)
+                    longest = data.length > longest ? data.length : longest
+                }
+            }
+
+            return { startIndex: 0, endIndex: matches.length, longest: longest, data: matches }
+        }
+
         function displaySuggestions() {
             ERROR_ELEMENT.textContent = ''
 
-            const userInput = INPUT_ELEMENT.value.trim()
-            if (userInput === previousInput)
+            const userInput = REGEX_BUTTON.checked ? INPUT_ELEMENT.value : INPUT_ELEMENT.value.trim()
+            const regexState = REGEX_BUTTON.checked ? true : false
+
+            if (userInput === previousInput && regexState === previousRegexState)
                 return
 
             previousInput = userInput
+            previousRegexState = regexState
+
             OPTION_ELEMENT.classList.remove('hidden')
-            const { startIndex, endIndex, longest } = queryStorage(userInput)
+            const { startIndex, endIndex, longest, data } = REGEX_BUTTON.checked ? queryRegex(userInput) : queryStorage(userInput)
 
             const totalMatches = endIndex - startIndex
             const truncatedEnd = startIndex + 50 > endIndex ? endIndex : startIndex + 50
 
-            OPTION_ELEMENT.textContent = formatColumns(startIndex, truncatedEnd, longest)
+            OPTION_ELEMENT.textContent = formatColumns(startIndex, truncatedEnd, longest, data)
 
             if (totalMatches > 50) {
                 const showMoreButton = document.createElement('button')
                 showMoreButton.textContent = `Show more (${totalMatches - 50} more)`
                 showMoreButton.onclick = () => {
-                    OPTION_ELEMENT.textContent = formatColumns(startIndex, endIndex, longest)
+                    OPTION_ELEMENT.textContent = formatColumns(startIndex, endIndex, longest, data)
                 }
                 OPTION_ELEMENT.appendChild(showMoreButton)
             }
