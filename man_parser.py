@@ -42,9 +42,9 @@ def setup_autocomplete() -> None:
 def _run_command_and_get_output(command: List[str]) -> str | Perror:
     try:
         with Popen(command, stdout=PIPE) as proc:
-            return proc.stdout.read().decode('utf-8')
-    except Exception:
-        return could_not_run_command(' '.join(command))
+            return proc.stdout.read().decode('utf-8', 'replace')
+    except Exception as e:
+        return could_not_run_command(' '.join(command) + f'Error {e}')
 
 def _find_page(name: str, section: str) -> str | Perror:
     locations: str = _run_command_and_get_output(['man', '-wa', name])
