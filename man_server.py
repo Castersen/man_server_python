@@ -1,4 +1,4 @@
-import http.server
+from http.server import SimpleHTTPRequestHandler, HTTPStatus
 import socketserver
 import urllib.parse
 import argparse
@@ -8,9 +8,9 @@ from man_parser import get_page, setup_autocomplete
 from locations import ERROR_KEY, POTENTIALS, THEMES, START_PAGE, get_page_contents, GlobalOptions
 from errors import Perror, please_provide_name
 
-class ManPageHandler(http.server.SimpleHTTPRequestHandler):
+class ManPageHandler(SimpleHTTPRequestHandler):
     def __setup_200_headers(self):
-        self.send_response(200)
+        self.send_response(HTTPStatus.OK)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
 
@@ -33,7 +33,11 @@ class ManPageHandler(http.server.SimpleHTTPRequestHandler):
         return None, None
 
     def do_GET(self):
-        if self.path.startswith('/query-potentials'):
+        if self.path == '/favicon.ico':
+            self.send_response(HTTPStatus.NOT_FOUND)
+            self.end_headers()
+
+        elif self.path.startswith('/query-potentials'):
             self.__setup_200_headers()
             self.wfile.write(get_page_contents(POTENTIALS).encode('utf-8'))
 
@@ -72,7 +76,7 @@ def main():
     parser.add_argument('-p', '--port', type=int, help='Set port')
     parser.add_argument('-i', '--host', type=str, help='Set host')
     parser.add_argument('-t', '--theme', type=str, help='Set theme')
-    parser.add_argument('-r', '--refresh', action='store_true', 
+    parser.add_argument('-r', '--refresh', action='store_true',
                         help='Update the generated list of man pages on your system')
     parser.add_argument('-a', '--allow', action='store_true', help='Allow reuse of address')
     parser.add_argument('-l', '--list', action='store_true',
