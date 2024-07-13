@@ -9,22 +9,27 @@ from locations import ERROR_KEY, POTENTIALS, THEMES, START_PAGE, get_page_conten
 from errors import Perror, please_provide_name
 
 class ManPageHandler(SimpleHTTPRequestHandler):
-    def __setup_200_headers(self):
+    protocol_version = 'HTTP/1.1'
+
+    def __setup_200_headers(self, length: int):
         self.send_response(HTTPStatus.OK)
-        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-Type', 'text/html; charset=UTF-8')
+        self.send_header('Content-Length', str(length))
         self.end_headers()
 
     @lru_cache(maxsize=32)
-    def __get_start_page(self, error_msg: str):
+    def __get_start_page(self, error_msg: str) -> bytes:
         return START_PAGE.replace(ERROR_KEY, error_msg).encode('utf-8')
 
     def __send_start_page(self):
-        self.__setup_200_headers()
-        self.wfile.write(self.__get_start_page(''))
+        payload = self.__get_start_page('')
+        self.__setup_200_headers(len(payload))
+        self.wfile.write(payload)
 
     def __send_start_page_with_error(self, error_msg: str):
-        self.__setup_200_headers()
-        self.wfile.write(self.__get_start_page(error_msg))
+        payload = self.__get_start_page(error_msg)
+        self.__setup_200_headers(len(payload))
+        self.wfile.write(payload)
 
     def __parse_page_name(self, query: str):
         if '+' in query:
@@ -38,8 +43,9 @@ class ManPageHandler(SimpleHTTPRequestHandler):
             self.end_headers()
 
         elif self.path.startswith('/query-potentials'):
-            self.__setup_200_headers()
-            self.wfile.write(get_page_contents(POTENTIALS).encode('utf-8'))
+            payload = get_page_contents(POTENTIALS).encode('utf-8')
+            self.__setup_200_headers(len(payload))
+            self.wfile.write(payload)
 
         elif self.path.startswith('/cgi-bin'):
             query = urllib.parse.urlparse(self.path).query
@@ -60,8 +66,9 @@ class ManPageHandler(SimpleHTTPRequestHandler):
                 self.__send_start_page_with_error(man_page_html.message)
                 return
 
-            self.__setup_200_headers()
-            self.wfile.write(man_page_html.encode('utf-8'))
+            payload = man_page_html.encode('utf-8')
+            self.__setup_200_headers(len(payload))
+            self.wfile.write(payload)
         else:
             self.__send_start_page()
             return
