@@ -49,17 +49,27 @@
             left: 0;
             right: 0;
             background-color: #2d2d2d;
-            box-sizing: border-box;
             border-radius: 10px;
             margin-top: 15px;
-        }
-        #option {
-            white-space: pre-wrap;
-            word-wrap: break-word;
             padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        .option {
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 5px;
+            word-wrap: break-word;
+            text-align: center;
+        }
+        #suggestion-message {
+            grid-column: 1 / -1;
         }
         #option-container button {
-            width: 100%;
+            grid-column: 1 / -1;
         }
         button:hover, #view-suggestions:hover {
             cursor: pointer;
@@ -76,7 +86,7 @@
             right: 20px;
         }
         .hidden {
-            display: none;
+            display: none !important;
         }
         #view-suggestions {
             display: none;
@@ -154,16 +164,18 @@
             View Suggestions
         </button>
         <div id="option-container">
-            <div id="option">Pressing tab in the input provides autocomplete suggestions, similar to the terminal, format is [name][section] (no space separator)</div>
+            <div id="suggestion-message">Pressing tab in the input provides autocomplete suggestions, similar to the terminal, format is [name][section] (no space separator)</div>
         </div>
         <div id="error">{error}</div>
     </div>
     <script>
         const KEY = 'man_pages_data'
         const ERROR_ELEMENT = document.getElementById('error')
-        const OPTION_ELEMENT = document.getElementById('option')
+        const OPTION_CONTAINER = document.getElementById('option-container')
+        const SUGGESTION_MESSAGE = document.getElementById('suggestion-message')
         const INPUT_ELEMENT = document.getElementById('man2html')
         const REGEX_BUTTON = document.getElementById('regex')
+        const SECTION_ELEMENT = document.getElementById('section')
         let manData = []
         let manLongest = 0
         let previousInput = null
@@ -173,7 +185,7 @@
 
         function setup() {
             if (ERROR_ELEMENT.textContent !== '')
-                OPTION_ELEMENT.classList.add('hidden')
+                OPTION_CONTAINER.classList.add('hidden')
 
             if(localStorage.key(0) !== null)
                 initializeData(localStorage.getItem(KEY))
@@ -248,28 +260,18 @@
         }
 
         function formatColumns(startIndex, endIndex, longest, data) {
-            let output = []
-            let num = 0
-            const colWidth = longest + 2
-            const numOfColumns = 3
-            const spaces = ' '.repeat(colWidth)
+            OPTION_CONTAINER.innerHTML = ''
+            OPTION_CONTAINER.classList.remove('hidden')
 
             for (let i = startIndex; i < endIndex; ++i) {
-                if (!data)
-                    output.push(manData[i] + spaces.slice(0, colWidth - manData[i].length))
-                else
-                    output.push(data[i] + spaces.slice(0, colWidth - data[i].length))
+                let entry = data ? data[i] : manData[i]
 
-                if ((num + 1) % numOfColumns === 0)
-                    output.push('\n')
-                num += 1
+                const suggestionItem = document.createElement('div')
+                suggestionItem.classList.add('option')
+                suggestionItem.textContent = entry
+
+                OPTION_CONTAINER.appendChild(suggestionItem)
             }
-
-            let left = (num % numOfColumns)
-            if (left !== 0)
-                output.push(' '.repeat(colWidth * (numOfColumns - left)) + '\n')
-
-            return output.join('')
         }
 
         document.getElementById('man2html').addEventListener('keydown', (event) => {
@@ -302,6 +304,7 @@
         }
 
         function displaySuggestions() {
+            const maxMatches = 51
             ERROR_ELEMENT.textContent = ''
 
             const userInput = REGEX_BUTTON.checked ? INPUT_ELEMENT.value : INPUT_ELEMENT.value.trim()
@@ -313,21 +316,26 @@
             previousInput = userInput
             previousRegexState = regexState
 
-            OPTION_ELEMENT.classList.remove('hidden')
             const { startIndex, endIndex, longest, data } = REGEX_BUTTON.checked ? queryRegex(userInput) : queryStorage(userInput)
 
             const totalMatches = endIndex - startIndex
-            const truncatedEnd = startIndex + 50 > endIndex ? endIndex : startIndex + 50
+            const truncatedEnd = startIndex + maxMatches > endIndex ? endIndex : startIndex + maxMatches
 
-            OPTION_ELEMENT.textContent = formatColumns(startIndex, truncatedEnd, longest, data)
+            formatColumns(startIndex, truncatedEnd, longest, data)
 
-            if (totalMatches > 50) {
+            if (totalMatches == 1) {
+                const full_page = data ? data[0] : manData[startIndex]
+                INPUT_ELEMENT.value = full_page.slice(0, full_page.length-1)
+                SECTION_ELEMENT.value = full_page.at(-1)
+            }
+
+            if (totalMatches > maxMatches) {
                 const showMoreButton = document.createElement('button')
-                showMoreButton.textContent = `Show more (${totalMatches - 50} more)`
+                showMoreButton.textContent = `Show more (${totalMatches - maxMatches} more)`
                 showMoreButton.onclick = () => {
-                    OPTION_ELEMENT.textContent = formatColumns(startIndex, endIndex, longest, data)
+                    formatColumns(startIndex, endIndex, longest, data)
                 }
-                OPTION_ELEMENT.appendChild(showMoreButton)
+                OPTION_CONTAINER.appendChild(showMoreButton)
             }
         }
 
