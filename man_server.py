@@ -1,4 +1,5 @@
-from http.server import SimpleHTTPRequestHandler, HTTPStatus
+from http.server import SimpleHTTPRequestHandler
+from http import HTTPStatus
 import socketserver
 import urllib.parse
 import argparse
@@ -9,12 +10,11 @@ from locations import ERROR_KEY, POTENTIALS, THEMES, START_PAGE, get_page_conten
 from errors import Perror, please_provide_name
 
 class ManPageHandler(SimpleHTTPRequestHandler):
-    protocol_version = 'HTTP/1.1'
+    protocol_version = 'HTTP/1.0'
 
-    def __setup_200_headers(self, length: int):
+    def __setup_200_headers(self):
         self.send_response(HTTPStatus.OK)
         self.send_header('Content-Type', 'text/html; charset=UTF-8')
-        self.send_header('Content-Length', str(length))
         self.end_headers()
 
     @lru_cache(maxsize=32)
@@ -23,12 +23,12 @@ class ManPageHandler(SimpleHTTPRequestHandler):
 
     def __send_start_page(self):
         payload = self.__get_start_page('')
-        self.__setup_200_headers(len(payload))
+        self.__setup_200_headers()
         self.wfile.write(payload)
 
     def __send_start_page_with_error(self, error_msg: str):
         payload = self.__get_start_page(error_msg)
-        self.__setup_200_headers(len(payload))
+        self.__setup_200_headers()
         self.wfile.write(payload)
 
     def __parse_page_name(self, query: str):
@@ -44,7 +44,7 @@ class ManPageHandler(SimpleHTTPRequestHandler):
 
         elif self.path.startswith('/query-potentials'):
             payload = get_page_contents(POTENTIALS).encode('utf-8')
-            self.__setup_200_headers(len(payload))
+            self.__setup_200_headers()
             self.wfile.write(payload)
 
         elif self.path.startswith('/cgi-bin'):
@@ -67,7 +67,7 @@ class ManPageHandler(SimpleHTTPRequestHandler):
                 return
 
             payload = man_page_html.encode('utf-8')
-            self.__setup_200_headers(len(payload))
+            self.__setup_200_headers()
             self.wfile.write(payload)
         else:
             self.__send_start_page()
@@ -75,13 +75,9 @@ class ManPageHandler(SimpleHTTPRequestHandler):
 
 
 def main():
-    port = 8000
-    host = 'localhost'
-    allow_reuse = False
-
     parser = argparse.ArgumentParser(description='Man server options')
-    parser.add_argument('-p', '--port', type=int, help='Set port')
-    parser.add_argument('-i', '--host', type=str, help='Set host')
+    parser.add_argument('-p', '--port', type=int, help='Set port', default=8000)
+    parser.add_argument('-i', '--host', type=str, help='Set host', default='localhost')
     parser.add_argument('-t', '--theme', type=str, help='Set theme')
     parser.add_argument('-r', '--refresh', action='store_true',
                         help='Update the generated list of man pages on your system')
@@ -95,12 +91,6 @@ def main():
     if (args.list):
         print(', '.join(theme.name.rstrip('.css') for theme in THEMES))
         return
-    if (args.port):
-        port = args.port
-    if (args.host):
-        host = args.host
-    if (args.allow):
-        allow_reuse = args.allow
     if (args.theme):
         GlobalOptions.page_theme = args.theme
     if (args.no_cache):
@@ -110,10 +100,10 @@ def main():
 
     class ThreadingTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         daemon_threads = True
-        allow_reuse_address = allow_reuse
+        allow_reuse_address = args.allow
 
-    print(f'Starting server at {host} port {port}')
-    with ThreadingTCPServer((host, port), ManPageHandler) as server:
+    print(f'Starting server at {args.host} port {args.port}')
+    with ThreadingTCPServer((args.host, args.port), ManPageHandler) as server:
         server.serve_forever()
 
 if __name__ == '__main__':
