@@ -79,15 +79,9 @@ def _post_process_page(page: str, name: str) -> str:
     html_page = TEMPLATE_PAGE.replace('{sections}', section_html).replace('{data}', page).replace('{name}', name)
     return add_theme(html_page)
 
-def _format_cache_name(name: str, section: str) -> Path:
-    return CACHE_DIR / (name + section + '.html')
-
 def _fetch_page_from_cache(cache_path: Path) -> str:
     with open(cache_path, 'r') as f:
         return f.read()
-
-def _page_in_cache(cache_path: Path) -> bool:
-    return cache_path in CACHE
 
 def _cache_page(html_page: str, cache_path: Path) -> None:
     with open(cache_path, 'w') as f:
@@ -96,9 +90,9 @@ def _cache_page(html_page: str, cache_path: Path) -> None:
     CACHE.append(cache_path)
 
 def get_page(name: str, section: str) -> str | Perror:
-    cache_path = _format_cache_name(name, section)
+    cache_path = CACHE_DIR / (name + section + '.html')
 
-    if GlobalOptions.use_cache and _page_in_cache(cache_path):
+    if GlobalOptions.use_cache and cache_path in CACHE:
         return _post_process_page(_fetch_page_from_cache(cache_path), name)
 
     page_path = _find_page(name, section)
